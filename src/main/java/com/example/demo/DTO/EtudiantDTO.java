@@ -7,6 +7,12 @@ import lombok.Setter;
 @Setter
 public class EtudiantDTO {
     private String noEtudiant;
+    private String prenom;
+    private String nom;
+
+
+    private String emailUbo;
+
 
 
 }

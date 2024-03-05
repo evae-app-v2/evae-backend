@@ -326,8 +326,15 @@ public class UserService {
 			EtudiantDTO etu = new EtudiantDTO();
 			if (user.getNoEtudiant() != null) {
 				etu.setNoEtudiant(user.getNoEtudiant().getNoEtudiant());
+				etu.setNom(user.getNoEtudiant().getNom());
+				etu.setPrenom(user.getNoEtudiant().getPrenom());
+				etu.setEmailUbo(user.getNoEtudiant().getEmailUbo());
 			} else {
 				etu.setNoEtudiant(null);
+				etu.setNoEtudiant(null);
+				etu.setNom(null);
+				etu.setPrenom(null);
+				etu.setEmailUbo(null);
 
 			}
 
