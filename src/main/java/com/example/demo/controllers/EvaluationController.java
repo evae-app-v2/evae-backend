@@ -52,5 +52,13 @@ public class EvaluationController {
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG , HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@PostMapping("/avancerWorkflow/{idEvaluation}")
+	public ResponseEntity<String> avancerWorkflow(@PathVariable long idEvaluation) {
+		return evaluationsservice.faireAvancerWorkflow(idEvaluation);
+	}
+
+
+
+
 
 }
