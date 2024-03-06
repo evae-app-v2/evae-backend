@@ -1,6 +1,5 @@
 package com.example.demo.services;
 
-import com.example.demo.DTO.ElementConstitutifDTO;
 import com.example.demo.DTO.EnseignantDTO;
 import com.example.demo.DTO.EvaluationDTO;
 import com.example.demo.DTO.QualificatifDTO;
@@ -15,6 +14,10 @@ import com.example.demo.repositories.*;
 import com.example.demo.utils.BackendUtils;
 import com.example.demo.utils.EmailUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
+
+
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,21 +40,22 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.*;
 import javax.sql.DataSource;
 
 @Service
 @AllArgsConstructor
 public class EvaluationService {
 
-	// Déclarez l'entité de gestion
-	@PersistenceContext
-	private EntityManager entityManager;
 
-	@Autowired
-	private DataSource dataSource;
+//	// Déclarez l'entité de gestion
+//	@PersistenceContext
+//	private EntityManager entityManager;
+//	@PersistenceUnit
+//	private EntityManagerFactory entityManagerFactory;
+//
+//	@Autowired
+//	private DataSource dataSource;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -283,9 +287,10 @@ public class EvaluationService {
 		try {
 			if (jwtFilter.isEnseignant()) {
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+				short noEvaluation = (short) (evaluationRepository.getMaxNoEvaluation()+ 1);
 
-				if (requestMap.containsKey("noEvaluation") && !requestMap.get("noEvaluation").isEmpty()) {
-					Evaluation evaluation = evaluationRepository.findByNoEvaluation(Short.parseShort(requestMap.get("noEvaluation")));
+
+					Evaluation evaluation = evaluationRepository.findByNoEvaluation(noEvaluation);
 
 					ElementConstitutifId ecId = new ElementConstitutifId();
 					ecId.setCodeFormation(requestMap.get("codeFormation"));
@@ -306,14 +311,13 @@ public class EvaluationService {
 					UeId.setCodeFormation(requestMap.get("codeFormation"));
 
 					UniteEnseignement ue = uniteEnseignementRepository.findByUniteEnseignementId(UeId);
-
 					if (Objects.isNull(evaluation)) {
 						// Créez la requête d'insertion avec la structure fournie
 						String sqlQuery = "INSERT INTO EVALUATION (ID_EVALUATION, NO_ENSEIGNANT, CODE_FORMATION, ANNEE_UNIVERSITAIRE, CODE_UE, CODE_EC, NO_EVALUATION, DESIGNATION, ETAT, PERIODE, DEBUT_REPONSE, FIN_REPONSE) " +
-								"VALUES (null, ?, ?, ?, ?, null, ?, ?, DEFAULT, ?, TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS'))";
+								"VALUES (null, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?, TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS'))";
 
 						// Exécutez la requête d'insertion
-						jdbcTemplate.update(sqlQuery, user.getNoEnseignant().getId(), requestMap.get("codeFormation"), requestMap.get("anneePro"), requestMap.get("codeUe"), Short.parseShort(requestMap.get("noEvaluation")), requestMap.get("designation"), requestMap.get("periode"), requestMap.get("debutReponse"), requestMap.get("finReponse"));
+						jdbcTemplate.update(sqlQuery, user.getNoEnseignant().getId(), requestMap.get("codeFormation"), requestMap.get("anneePro"), requestMap.get("codeUe"),requestMap.get("codeEc"),noEvaluation, requestMap.get("designation"), requestMap.get("periode"), requestMap.get("debutReponse"), requestMap.get("finReponse"));
 
 						// Retournez une réponse OK si l'insertion est réussie
 						return BackendUtils.getResponseEntity("Evaluation Successfully Registered", HttpStatus.OK);
@@ -321,12 +325,9 @@ public class EvaluationService {
 						// Retournez une réponse BAD_REQUEST si l'évaluation existe déjà
 						return BackendUtils.getResponseEntity("Evaluation already exists", HttpStatus.BAD_REQUEST);
 					}
-				} else {
-					// Retournez une réponse BAD_REQUEST si le numéro d'évaluation est manquant
-					return BackendUtils.getResponseEntity("Missing numero Evaluation Value", HttpStatus.BAD_REQUEST);
 				}
 
-			} else {
+			 else {
 				// Retournez une réponse UNAUTHORIZED si l'accès n'est pas autorisé
 				return BackendUtils.getResponseEntity(EvaeBackendConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
 			}
@@ -337,6 +338,43 @@ public class EvaluationService {
 		// Retournez une réponse INTERNAL_SERVER_ERROR si quelque chose se passe mal
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+	@Transactional
+	public ResponseEntity<String> faireAvancerWorkflow(long idEvaluation) {
+		try {
+			Evaluation evaluation = evaluationRepository.findById((int) idEvaluation);
+
+			// Vérifiez si l'évaluation existe
+			if (evaluation == null) {
+				return BackendUtils.getResponseEntity("Evaluation not found", HttpStatus.NOT_FOUND);
+			}
+
+			// Vérifiez si l'utilisateur est un enseignant autorisé à modifier l'évaluation
+			if (!jwtFilter.isEnseignant()) {
+				return BackendUtils.getResponseEntity(EvaeBackendConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+			}
+
+			// Vérifiez si l'évaluation est actuellement à l'état ELA (En Cours d'élaboration)
+			if (evaluation.getEtat().equals("ELA")) {
+				// Mettez à jour l'état de l'évaluation à DIS (Mise à Disposition)
+				evaluationRepository.updateEvaluationState((int) idEvaluation, "DIS");
+				return BackendUtils.getResponseEntity("Workflow advanced successfully to Mise à Disposition", HttpStatus.OK);
+			} else if (evaluation.getEtat().equals("DIS")) {
+				// Mettez à jour l'état de l'évaluation à CLO (Clôture)
+				evaluationRepository.updateEvaluationState((int) idEvaluation, "CLO");
+				return BackendUtils.getResponseEntity("Workflow advanced successfully to Clôture", HttpStatus.OK);
+			} else {
+				// L'évaluation n'est pas dans un état valide pour être avancée
+				return BackendUtils.getResponseEntity("Evaluation cannot be advanced from its current state", HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception ex) {
+			// Gérez les erreurs et imprimez-les
+			ex.printStackTrace();
+			return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+
 
 
 }
