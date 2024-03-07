@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import oracle.jdbc.OracleConnectionWrapper;
 import org.hibernate.Session;
@@ -48,20 +49,15 @@ import javax.sql.DataSource;
 public class EvaluationService {
 
 
-//	// Déclarez l'entité de gestion
-//	@PersistenceContext
-//	private EntityManager entityManager;
-//	@PersistenceUnit
-//	private EntityManagerFactory entityManagerFactory;
-//
-//	@Autowired
-//	private DataSource dataSource;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	ReponseQuestionRepository reponseQuestionRepository;
+
 
 	@Autowired
 	EvaluationRepository evaluationRepository;
@@ -181,7 +177,7 @@ public class EvaluationService {
 
 
 
-	public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiant() {
+	/*public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiant() {
 		Logger logger = LoggerFactory.getLogger(this.getClass());
 
 		try {
@@ -273,11 +269,120 @@ public class EvaluationService {
 			logger.error("Une erreur s'est produite lors de la récupération des évaluations de l'étudiant.", e);
 			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}*/
+
+
+
+	public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiant() {
+		Logger logger = LoggerFactory.getLogger(this.getClass());
+
+		try {
+			if (jwtFilter.isEtudiant()) {
+				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+				String codeFormation = Optional.ofNullable(user.getNoEtudiant().getPromotion().getId().getCodeFormation()).orElse("");
+				String anneeUniversitaire = Optional.ofNullable(user.getNoEtudiant().getPromotion().getId().getAnneeUniversitaire()).orElse("");
+
+				if (codeFormation.isEmpty() || anneeUniversitaire.isEmpty()) {
+					logger.error("Code de formation ou année universitaire vide.");
+					return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
+				}
+
+				logger.info("Recherche des évaluations pour le code de formation {} et l'année universitaire {}.", codeFormation, anneeUniversitaire);
+
+				List<Evaluation> evaluations = evaluationRepository.findByCodeFormationAnneeUnivAndEtat(codeFormation, anneeUniversitaire);
+
+				if (evaluations.isEmpty()) {
+					logger.warn("Aucune évaluation trouvée DISPONIBLE.", codeFormation, anneeUniversitaire);
+					return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
+				}
+
+				List<EvaluationDTO> evaluationsDTO = new ArrayList<>();
+
+				for (Evaluation evaluation : evaluations) {
+					EvaluationDTO evaluationDTO = new EvaluationDTO();
+					evaluationDTO.setDebutReponse(evaluation.getDebutReponse());
+					evaluationDTO.setDesignation(evaluation.getDesignation());
+					evaluationDTO.setCodeUE(evaluation.getUniteEnseignement().getId().getCodeUe());
+					evaluationDTO.setCodeFormation(evaluation.getPromotion().getCodeFormation().getCodeFormation());
+					evaluationDTO.setEtat(evaluation.getEtat());
+					evaluationDTO.setFinReponse(evaluation.getFinReponse());
+					evaluationDTO.setId(evaluation.getId());
+					evaluationDTO.setNoEvaluation(evaluation.getNoEvaluation());
+					evaluationDTO.setPeriode(evaluation.getPeriode());
+					evaluationDTO.setPromotion(evaluation.getPromotion().getId().getAnneeUniversitaire());
+
+					EnseignantDTO ens = new EnseignantDTO();
+					ens.setEmailUbo(evaluation.getNoEnseignant().getEmailUbo());
+					ens.setId(evaluation.getNoEnseignant().getId());
+					ens.setNom(evaluation.getNoEnseignant().getNom());
+					ens.setPrenom(evaluation.getNoEnseignant().getPrenom());
+					evaluationDTO.setNoEnseignant(ens);
+
+					List<RubriqueEvaluation> rubevae = rubriqueEvaluationRepository.findByIdEvaluation(evaluation);
+					List<EvaluationQuestionDTO> rqs = new ArrayList<>();
+
+					for (RubriqueEvaluation rubevaluation : rubevae) {
+						EvaluationQuestionDTO evaluationQuestionDTO = new EvaluationQuestionDTO();
+						evaluationQuestionDTO.setIdRubrique(rubevaluation.getIdRubrique().getId());
+						evaluationQuestionDTO.setOrdre(Long.valueOf(rubevaluation.getOrdre()));
+						evaluationQuestionDTO.setDesignation(rubevaluation.getIdRubrique().getDesignation());
+						evaluationQuestionDTO.setType(rubevaluation.getIdRubrique().getType());
+
+						// Liste des questions avec réponses aléatoires
+						List<RubriqueQuestion> rubriqueQuestions = RubriquequestionRepository.findByIdRubrique(rubevaluation.getIdRubrique().getId());
+
+						Set<QuestionDTO> uniqueQuestions = new LinkedHashSet<>();
+						for (RubriqueQuestion rubriqueQuestion : rubriqueQuestions) {
+							QuestionDTO questionDTO = new QuestionDTO();
+							questionDTO.setId(rubriqueQuestion.getIdQuestion().getId());
+							questionDTO.setIntitule(rubriqueQuestion.getIdQuestion().getIntitule());
+							questionDTO.setType(rubriqueQuestion.getIdQuestion().getType());
+							questionDTO.setOrdre(rubriqueQuestion.getOrdre());
+
+							System.out.println("ID QUestion"+rubriqueQuestion.getIdQuestion().getId());
+							System.out.println("RUBRIQUE EVALUATION"+rubriqueQuestion.getIdRubrique().getId());
+							System.out.println("QUESTION "+rubriqueQuestion.getIdQuestion().getId());
+
+
+
+							ReponseQuestion reponse = reponseQuestionRepository.findByQuestionIdQuestionRubriqueEva(rubriqueQuestion.getIdQuestion().getId(),rubriqueQuestion.getIdRubrique().getId() );
+							if (reponse != null) {
+								questionDTO.setPositionnements((long) Math.toIntExact(reponse.getPositionnement()));
+							} else {
+
+								questionDTO.setPositionnements(0L);
+							}
+
+
+							QualificatifDTO qualificatifDTO = new QualificatifDTO();
+							qualificatifDTO.setId(rubriqueQuestion.getIdQuestion().getIdQualificatif().getId());
+							qualificatifDTO.setMaximal(rubriqueQuestion.getIdQuestion().getIdQualificatif().getMaximal());
+							qualificatifDTO.setMinimal(rubriqueQuestion.getIdQuestion().getIdQualificatif().getMinimal());
+							questionDTO.setIdQualificatif(qualificatifDTO);
+
+							uniqueQuestions.add(questionDTO);
+						}
+
+						List<QuestionDTO> questionsList = new ArrayList<>(uniqueQuestions);
+						evaluationQuestionDTO.setQuestions(questionsList);
+						rqs.add(evaluationQuestionDTO);
+					}
+
+					evaluationDTO.setRubriques(rqs);
+					evaluationsDTO.add(evaluationDTO);
+				}
+
+				logger.info("Les évaluations ont été récupérées avec succès.");
+				return new ResponseEntity<>(evaluationsDTO, HttpStatus.OK);
+			} else {
+				logger.warn("L'utilisateur n'est pas autorisé à accéder à cette ressource.");
+				return new ResponseEntity<>(new ArrayList<>(), HttpStatus.UNAUTHORIZED);
+			}
+		} catch(Exception e) {
+			logger.error("Une erreur s'est produite lors de la récupération des évaluations de l'étudiant.", e);
+			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
-
-
-
-
 
 
 

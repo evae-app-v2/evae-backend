@@ -42,6 +42,16 @@ public class EvaluationController {
 		}
 	}
 
+	/*@GetMapping("/etudiantR")
+	public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiantR() {
+		try {
+			return evaluationsservice.getEvaluationsEtudiantR();
+		} catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}*/
+
 	@PostMapping(value = "/ajouter")
 	public ResponseEntity<String> AjouterEvaluation(@RequestBody Map<String, String> requestMap){
 		try {
