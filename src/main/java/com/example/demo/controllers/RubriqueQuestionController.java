@@ -65,11 +65,29 @@ public class RubriqueQuestionController {
         return ResponseEntity.ok("enregistrement reussie");
     }
 
-    @GetMapping("/deleteRubriqueComposee/{rubriqueId}")
+    @PostMapping("/add-multiple/{idRubrique}")
+    public ResponseEntity<List<RubriqueQuestion>> createMultipleRubriqueQuestions(
+            @PathVariable Integer idRubrique,
+            @RequestBody Map<String, Object> requestBody
+    ) {
+        try {
+            List<Integer> idQuestions = (List<Integer>) requestBody.get("idQuestions");
+
+            // Votre code de service pour créer les RubriqueQuestions
+            List<RubriqueQuestion> createdRubriqueQuestions = rubriqueQuestionService.createRubriqueQuestionsForRubrique(idRubrique, idQuestions);
+
+            return new ResponseEntity<>(createdRubriqueQuestions, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+   /* @GetMapping("/deleteRubriqueComposee/{rubriqueId}")
     public ResponseEntity<String> deleteRubriqueComposee(@PathVariable Integer rubriqueId) {
         rubriqueQuestionService.deleteRubriqueComposee(rubriqueId);
         return ResponseEntity.ok("Deletion successful.");
-    }
+    }*/
 
     @GetMapping("/groupedByRubrique")
     public ResponseEntity<Map<Integer, List<RubriqueQuestionDTO>>> getQuestionsGroupedByRubrique() {
@@ -78,22 +96,13 @@ public class RubriqueQuestionController {
     }
 
 
-
-    @GetMapping("/{rubriqueId}/questions")
-    public ResponseEntity<Set<Question>> getQuestionsByRubrique(@PathVariable Integer rubriqueId) {
+    @GetMapping("/getQuestions/{rubriqueId}")
+    public ResponseEntity<Set<Question>> getQuestionsNotInRubrique(@PathVariable Integer rubriqueId) {
         Rubrique rubrique = rubriqueRepository.findById(rubriqueId)
                 .orElseThrow(() -> new RuntimeException("Rubrique not found"));
-
-        Set<Question> questions = rubriqueQuestionService.getQuestionsByRubrique(rubrique);
+        Set<Question> questions = rubriqueQuestionService.getQuestionsNotInRubrique(rubrique);
         return ResponseEntity.ok(questions);
     }
-
-
-
-
-
-
-
 
     @PostMapping("/update/{rubriqueId1}/{questionId1}/{rubriqueId2}/{questionId2}/swapOrdre")
     public ResponseEntity<?> swapOrdre(@PathVariable Integer rubriqueId1,

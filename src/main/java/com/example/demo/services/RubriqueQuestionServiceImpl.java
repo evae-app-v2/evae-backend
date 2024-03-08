@@ -22,16 +22,17 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
     private RubriqueRepository rubriqueRepository;
     @Autowired
     private QuestionRepository questionRepository;
-
     @Autowired
     private RubriqueEvaluationRepository rubriqueEvaluationRepository ;
 
-
+    @Autowired
+    QuestionService questionservice;
 //USED
     @Override
     public List<RubriqueQuestionDTOO> getAll() {
-        List<RubriqueQuestion> rubquestions = rubriqueQuestionRepository.findAll();
         Map<Integer, RubriqueQuestionDTOO> rubriqueMap = new HashMap<>();
+
+        List<RubriqueQuestion> rubquestions = rubriqueQuestionRepository.findAll();
 
         for (RubriqueQuestion rubriquequestion : rubquestions) {
             RubriqueDTO rub = new RubriqueDTO();
@@ -43,24 +44,59 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             RubriqueQuestionDTOO rubriqueQuestionDTOO = rubriqueMap.getOrDefault(rub.getId(), new RubriqueQuestionDTOO());
             rubriqueQuestionDTOO.setRUBRIQUE(rub);
 
-            QuestionDTO q = new QuestionDTO();
-            q.setId(rubriquequestion.getIdQuestion().getId());
-            q.setOrdre(rubriquequestion.getOrdre());
-            q.setType(rubriquequestion.getIdQuestion().getType());
-            q.setIntitule(rubriquequestion.getIdQuestion().getIntitule());
-            QualificatifDTO qua = new QualificatifDTO();
-            qua.setId(rubriquequestion.getIdQuestion().getIdQualificatif().getId());
-            qua.setMaximal(rubriquequestion.getIdQuestion().getIdQualificatif().getMaximal());
-            qua.setMinimal(rubriquequestion.getIdQuestion().getIdQualificatif().getMinimal());
-            q.setIdQualificatif(qua);
+            if (rubriquequestion.getIdQuestion() != null) {
+                QuestionDTO q = new QuestionDTO();
+                q.setId(rubriquequestion.getIdQuestion().getId());
+                q.setOrdre(rubriquequestion.getOrdre());
+                q.setType(rubriquequestion.getIdQuestion().getType());
+                q.setIntitule(rubriquequestion.getIdQuestion().getIntitule());
+                QualificatifDTO qua = new QualificatifDTO();
+                qua.setId(rubriquequestion.getIdQuestion().getIdQualificatif().getId());
+                qua.setMaximal(rubriquequestion.getIdQuestion().getIdQualificatif().getMaximal());
+                qua.setMinimal(rubriquequestion.getIdQuestion().getIdQualificatif().getMinimal());
+                q.setIdQualificatif(qua);
 
-            rubriqueQuestionDTOO.addQuestion(q);
+                rubriqueQuestionDTOO.addQuestion(q);
+            }
+
             rubriqueMap.put(rub.getId(), rubriqueQuestionDTOO);
+        }
+
+        // Récupérer les rubriques sans questions
+        List<RubriqueQuestionDTOO> rubriquesWithoutQuestions = getRubriquesWithoutQuestions();
+
+        // Fusionner les deux listes
+        for (RubriqueQuestionDTOO rubriqueWithoutQuestions : rubriquesWithoutQuestions) {
+            if (!rubriqueMap.containsKey(rubriqueWithoutQuestions.getRUBRIQUE().getId())) {
+                rubriqueMap.put(rubriqueWithoutQuestions.getRUBRIQUE().getId(), rubriqueWithoutQuestions);
+            }
         }
 
         return new ArrayList<>(rubriqueMap.values());
     }
 
+    public List<RubriqueQuestionDTOO> getRubriquesWithoutQuestions() {
+        List<Rubrique> rubriquesWithoutQuestions = rubriqueRepository.findRubriquesWithoutQuestions();
+
+        List<RubriqueQuestionDTOO> result = new ArrayList<>();
+
+        for (Rubrique rubriqueWithoutQuestions : rubriquesWithoutQuestions) {
+            RubriqueDTO rub = new RubriqueDTO();
+            rub.setId(rubriqueWithoutQuestions.getId());
+            rub.setType(rubriqueWithoutQuestions.getType());
+            rub.setDesignation(rubriqueWithoutQuestions.getDesignation());
+            rub.setOrdre(rubriqueWithoutQuestions.getOrdre());
+
+            RubriqueQuestionDTOO rubriqueQuestionDTOO = new RubriqueQuestionDTOO();
+            rubriqueQuestionDTOO.setRUBRIQUE(rub);
+            // Initialiser la liste de questions comme une liste vide
+            rubriqueQuestionDTOO.setQuestions(new ArrayList<>());
+
+            result.add(rubriqueQuestionDTOO);
+        }
+
+        return result;
+    }
     //USED
     @Override
     public String deleteRubriqueQuestionByIds(Integer rubriqueId, Integer questionId) throws RubriqueQuestionNotFoundException {
@@ -80,6 +116,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
         Optional<Rubrique> rubriqueOptional = rubriqueRepository.findById(rubriqueId);
         if (rubriqueOptional.isPresent()) {
             rubriqueQuestionRepository.deleteByRubriqueId(rubriqueId);
+            rubriqueRepository.delete(rubriqueOptional.get());
             return "Deletion successful.";
         } else {
             throw new RubriqueNotFoundException("Rubrique with ID " + rubriqueId + " not found.");
@@ -88,59 +125,79 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
 
     //USED
     public RubriqueQuestion createRubriqueQuestion(RubriqueQuestionDTO rubriqueQuestionDTO) {
+        RubriqueQuestion rubriqueQuestion = new RubriqueQuestion();
+        RubriqueQuestionId rubriqueQuestionId = new RubriqueQuestionId();
 
-        if (rubriqueQuestionRepository.existsById_IdRubriqueAndId_IdQuestion(
-                rubriqueQuestionDTO.getIdRubrique(),
-                rubriqueQuestionDTO.getIdQuestion())) {
-            throw new DuplicateEntityException("cette rubrique existe déjà");
-        }
+        rubriqueQuestionId.setIdRubrique(rubriqueQuestionDTO.getIdRubrique());
+        rubriqueQuestionId.setIdQuestion(rubriqueQuestionDTO.getIdQuestion());
 
-        if (rubriqueQuestionRepository.existsById_IdRubriqueAndOrdre(
-                rubriqueQuestionDTO.getIdRubrique(),
-                rubriqueQuestionDTO.getOrdre())){
-            throw new OrdreException("Une question de meme odre existe déjà");
-        }
+        rubriqueQuestion.setId(rubriqueQuestionId);
+        Rubrique rubrique = rubriqueRepository.findById(rubriqueQuestionDTO.getIdRubrique())
+                .orElseThrow(() -> new NotFoundEntityException("rubrique"));
+        rubriqueQuestion.setIdRubrique(rubrique);
 
-            RubriqueQuestion rubriqueQuestion = new RubriqueQuestion();
-            RubriqueQuestionId rubriqueQuestionId = new RubriqueQuestionId();
+        Question question = questionRepository.findById(rubriqueQuestionDTO.getIdQuestion())
+                .orElseThrow(() -> new NotFoundEntityException("question"));
+        rubriqueQuestion.setIdQuestion(question);
 
-            rubriqueQuestionId.setIdRubrique(rubriqueQuestionDTO.getIdRubrique());
-            rubriqueQuestionId.setIdQuestion(rubriqueQuestionDTO.getIdQuestion());
-
-            rubriqueQuestion.setId(rubriqueQuestionId);
-            Rubrique rubrique = rubriqueRepository.findById(rubriqueQuestionDTO.getIdRubrique())
-                    .orElseThrow(() -> new NotFoundEntityException("rubrique"));
-            rubriqueQuestion.setIdRubrique(rubrique);
-
-            Question question = questionRepository.findById(rubriqueQuestionDTO.getIdQuestion())
-                    .orElseThrow(() -> new NotFoundEntityException("question"));
-            rubriqueQuestion.setIdQuestion(question);
-
-            rubriqueQuestion.setOrdre(rubriqueQuestionDTO.getOrdre());
-            return rubriqueQuestionRepository.save(rubriqueQuestion);
+        Long max = rubriqueQuestionRepository.findMaxOrdreByIdRubrique(rubriqueQuestionDTO.getIdRubrique());
+        rubriqueQuestion.setOrdre(max+1);
+        return rubriqueQuestionRepository.save(rubriqueQuestion);
     }
 
 
-
     @Override
-    public String deleteRubriqueComposee(int idRubrique){
+    public Set<Question> getQuestionsNotInRubrique(Rubrique rubrique) {
 
-        Rubrique rubrique = rubriqueRepository.findById(idRubrique).get();
+        Set<Question> questionsInRubrique = getQuestionsByRubrique(rubrique);
+        Set<Question> allQuestions = new HashSet<>(questionRepository.findAll());
 
-        List<RubriqueEvaluation> rubevae = rubriqueEvaluationRepository.findByIdRubrique(rubrique);
+        allQuestions.removeAll(questionsInRubrique);
 
-        if(rubevae.isEmpty()){
-            rubriqueQuestionRepository.deleteByRubriqueId(idRubrique);
-            return "Rubrique composee est suprimee avec succes";
-        }else {
-            return "RUbrique composee est utilisee dans une evaluation";
-        }
-
+        return allQuestions;
     }
 
     public Set<Question> getQuestionsByRubrique(Rubrique rubrique) {
         return rubriqueQuestionRepository.findQuestionsByRubrique(rubrique);
     }
+
+    @Override
+    public List<RubriqueQuestion> createRubriqueQuestionsForRubrique(Integer idRubrique, List<Integer> idQuestions) {
+        // Récupérer la rubrique associée à l'idRubrique
+        Rubrique rubrique = rubriqueRepository.findById(idRubrique)
+                .orElseThrow(() -> new NotFoundEntityException("rubrique"));
+
+        // Récupérer le dernier ordre existant pour cette rubrique
+        Long maxOrdre = rubriqueQuestionRepository.findMaxOrdreByIdRubrique(idRubrique);
+
+        // Créer la liste pour stocker les nouvelles instances de RubriqueQuestion
+        List<RubriqueQuestion> rubriqueQuestions = new ArrayList<>();
+
+        // Créer les instances de RubriqueQuestion pour chaque idQuestion
+        for (Integer idQuestion : idQuestions) {
+            RubriqueQuestion rubriqueQuestion = new RubriqueQuestion();
+            RubriqueQuestionId rubriqueQuestionId = new RubriqueQuestionId();
+
+            rubriqueQuestionId.setIdRubrique(idRubrique);
+            rubriqueQuestionId.setIdQuestion(idQuestion);
+
+            rubriqueQuestion.setId(rubriqueQuestionId);
+            rubriqueQuestion.setIdRubrique(rubrique);
+
+            Question question = questionRepository.findById(idQuestion)
+                    .orElseThrow(() -> new NotFoundEntityException("question"));
+            rubriqueQuestion.setIdQuestion(question);
+
+            // Incrémenter l'ordre pour chaque nouvelle instance
+            rubriqueQuestion.setOrdre(++maxOrdre);
+
+            rubriqueQuestions.add(rubriqueQuestion);
+        }
+
+        // Enregistrer toutes les nouvelles instances de RubriqueQuestion
+        return rubriqueQuestionRepository.saveAll(rubriqueQuestions);
+    }
+
 
 
     public List<RubriqueQuestionDTO> getAllRubriqueQuestion() {

@@ -25,8 +25,11 @@ public interface RubriqueQuestionRepository extends JpaRepository<RubriqueQuesti
 
 	@Query("select rq from RubriqueQuestion rq where rq.id.idRubrique = :idRubrique")
 	List<RubriqueQuestion> findByIdRubrique(@Param("idRubrique") int idRubrique);
-	
 
+	@Query("SELECT COALESCE(MAX(rq.ordre), 0) " +
+			"FROM RubriqueQuestion rq " +
+			"WHERE rq.id.idRubrique = :rubriqueId")
+	Long findMaxOrdreByIdRubrique(@Param("rubriqueId") Integer rubriqueId);
 	boolean existsById_IdRubriqueAndId_IdQuestion(
 			Integer rubriqueId,
 			Integer questionId

@@ -20,7 +20,8 @@ public interface RubriqueRepository extends JpaRepository<Rubrique, Integer> {
     @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Rubrique r WHERE r.designation = :designation AND r.id <> :id")
     boolean existsByDesignationAndIdNot(@Param("designation") String designation, @Param("id") Integer id);
 
-
+    @Query("SELECT r FROM Rubrique r WHERE r.id NOT IN (SELECT rq.idRubrique.id FROM RubriqueQuestion rq)")
+    List<Rubrique> findRubriquesWithoutQuestions();
 
     Optional<Rubrique> findByDesignation(String designation);
     void deleteByDesignation(String designation);

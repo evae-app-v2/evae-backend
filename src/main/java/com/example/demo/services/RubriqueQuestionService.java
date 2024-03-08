@@ -14,7 +14,13 @@ import java.util.Set;
 
 public interface RubriqueQuestionService {
     public RubriqueQuestion createRubriqueQuestion(RubriqueQuestionDTO rubriqueQuestionDTO);
+
+    Set<Question> getQuestionsNotInRubrique(Rubrique rubrique);
+
     public Set<Question> getQuestionsByRubrique(Rubrique rubrique);
+
+    List<RubriqueQuestion> createRubriqueQuestionsForRubrique(Integer idRubrique, List<Integer> idQuestions);
+
     public List<RubriqueQuestionDTO> getAllRubriqueQuestion();
     public String deleteRubriqueQuestionsByRubriqueId(Integer rubriqueId) throws RubriqueNotFoundException;
 
@@ -28,5 +34,5 @@ public interface RubriqueQuestionService {
 
     List<RubriqueQuestionDTOO> getAll();
 
-    public String deleteRubriqueComposee(int idRubrique);
+    //public String deleteRubriqueComposee(int idRubrique);
 }
