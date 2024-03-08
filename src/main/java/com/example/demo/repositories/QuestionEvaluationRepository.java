@@ -3,6 +3,7 @@ package com.example.demo.repositories;
 import com.example.demo.models.Question;
 import com.example.demo.models.QuestionEvaluation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,5 +16,9 @@ public interface QuestionEvaluationRepository extends JpaRepository<QuestionEval
 
 	@Query("select qe from QuestionEvaluation qe where qe.idQuestion = :question")
 	List<QuestionEvaluation> findByQuestionList(@Param("question") Question question);
+
+	@Modifying
+	@Query("delete from QuestionEvaluation qe where qe.id = :id")
+	void deleteQuestionEvaluation(@Param("id") int id);
 
 }

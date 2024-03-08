@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.demo.models.Evaluation;
 import com.example.demo.models.RubriqueEvaluation;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface RubriqueEvaluationRepository extends JpaRepository<RubriqueEvaluation, Integer>{
 	
@@ -14,4 +17,7 @@ public interface RubriqueEvaluationRepository extends JpaRepository<RubriqueEval
 
 	List<RubriqueEvaluation> findByIdRubrique(Rubrique rubrique);
 
+	@Modifying
+	@Query("delete from RubriqueEvaluation re where re.id = :id")
+	void deleteRubriqueEvaluation(@Param("id") int id);
 }

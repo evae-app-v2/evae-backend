@@ -31,4 +31,15 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
 	@Modifying
 	@Query("UPDATE Evaluation ev SET ev.etat = :etat WHERE ev.id = :id")
 	void updateEvaluationState(@Param("id") int id, @Param("etat") String etat);
+
+	@Modifying
+	@Query("UPDATE Evaluation e SET e.promotion.id.codeFormation = :codeFormation, e.promotion.id.anneeUniversitaire = :anneePro, e.debutReponse = :debutReponse, e.finReponse = :finReponse, e.designation = :designation, e.periode = :periode, e.elementConstitutif.id.codeEc = :codeEc, e.elementConstitutif.id.codeUe = :codeUe WHERE e.noEvaluation = :noEvaluation")
+	void updateEvaluation(@Param("codeFormation") String codeFormation, @Param("anneePro") String anneePro, @Param("debutReponse") LocalDate debutReponse, @Param("finReponse") LocalDate finReponse, @Param("designation") String designation, @Param("codeEc") String codeEc, @Param("codeUe") String codeUe, @Param("noEvaluation") short noEvaluation, @Param("periode") String periode );
+
+	@Modifying
+	@Query("delete from Evaluation e where e.noEvaluation = :noEvaluation")
+	void deleteEvaluation(@Param("noEvaluation") short noEValuation);
+
+
+
 }
