@@ -39,7 +39,7 @@ public class Question {
     private String intitule;
 
     @OneToMany(mappedBy = "idQuestion")
-    @JsonBackReference
+    @JsonIgnore
     private Set<QuestionEvaluation> questionEvaluations = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idQuestion")
