@@ -9,6 +9,9 @@ import java.util.List;
 @Setter
 public class EvaluationQuestionDTO {
     private Integer idRubrique;
+    private Integer idRubriqueEva;
+
+
     private Integer idQuestion;
     private Long ordre;
     private String Designation;

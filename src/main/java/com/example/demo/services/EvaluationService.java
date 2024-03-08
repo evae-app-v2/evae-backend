@@ -675,6 +675,8 @@ public class EvaluationService {
 						evaluationQuestionDTO.setIdRubrique(rubevaluation.getIdRubrique().getId());
 						evaluationQuestionDTO.setOrdre(Long.valueOf(rubevaluation.getOrdre()));
 						evaluationQuestionDTO.setDesignation(rubevaluation.getIdRubrique().getDesignation());
+						evaluationQuestionDTO.setIdRubriqueEva(rubevaluation.getId());
+
 						evaluationQuestionDTO.setType(rubevaluation.getIdRubrique().getType());
 
 						// Liste des questions avec réponses aléatoires
@@ -694,13 +696,10 @@ public class EvaluationService {
 
 
 
-							ReponseQuestion reponse = reponseQuestionRepository.findByQuestionIdQuestionRubriqueEva(rubriqueQuestion.getIdQuestion().getId(),rubriqueQuestion.getIdRubrique().getId() );
-							if (reponse != null) {
-								questionDTO.setPositionnements((long) Math.toIntExact(reponse.getPositionnement()));
-							} else {
+							ReponseQuestion reponse = reponseQuestionRepository.findByQuestionIdQuestionRubriqueEva(rubriqueQuestion.getIdQuestion().getId(),rubevaluation.getId(),evaluation.getId() );
 
-								questionDTO.setPositionnements(0L);
-							}
+								questionDTO.setPositionnements((long) Math.toIntExact(reponse.getPositionnement()));
+
 
 
 							QualificatifDTO qualificatifDTO = new QualificatifDTO();
