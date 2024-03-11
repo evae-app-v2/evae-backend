@@ -21,4 +21,7 @@ public interface QuestionEvaluationRepository extends JpaRepository<QuestionEval
 	@Query("delete from QuestionEvaluation qe where qe.id = :id")
 	void deleteQuestionEvaluation(@Param("id") int id);
 
+	@Query("select qe from QuestionEvaluation qe where qe.idRubriqueEvaluation.id = :idRubriqueEvaluation")
+	List<QuestionEvaluation> getQuestionEvaluationRE(@Param("idRubriqueEvaluation") Integer idRubriqueEvaluation);
+
 }
