@@ -13,28 +13,17 @@ import java.util.Map;
 import java.util.Set;
 
 public interface RubriqueQuestionService {
+    List<RubriqueQuestionDTOO> getAll();
+    public String deleteRubriqueQuestionByIds(Integer rubriqueId, Integer questionId) throws RubriqueQuestionNotFoundException;
+    public String deleteRubriqueQuestionsByRubriqueId(Integer rubriqueId) throws RubriqueNotFoundException;
     public RubriqueQuestion createRubriqueQuestion(RubriqueQuestionDTO rubriqueQuestionDTO);
+
+    List<RubriqueQuestion> createRubriqueQuestionsForRubrique(Integer idRubrique, List<Integer> idQuestions);
 
     Set<Question> getQuestionsNotInRubrique(Rubrique rubrique);
 
     public Set<Question> getQuestionsByRubrique(Rubrique rubrique);
 
-    List<RubriqueQuestion> createRubriqueQuestionsForRubrique(Integer idRubrique, List<Integer> idQuestions);
-
     List<RubriqueQuestion> updateOrdreRubriqueQuestions(List<RubriqueQuestionDTO> rubriqueQuestionDTOs);
 
-    public List<RubriqueQuestionDTO> getAllRubriqueQuestion();
-    public String deleteRubriqueQuestionsByRubriqueId(Integer rubriqueId) throws RubriqueNotFoundException;
-
-    public String deleteRubriqueQuestionByIds(Integer rubriqueId, Integer questionId) throws RubriqueQuestionNotFoundException;
-    void swapOrdre(Integer idRubrique1, Integer idQuestion1, Integer idRubrique2, Integer idQuestion2) throws RubriqueQuestionNotFoundException;
-
-    public Map<Integer, List<RubriqueQuestionDTO>> getQuestionsGroupedByRubrique();
-
-    public Map<Integer, List<RubriqueQuestionDTO>> getQuestionsGroupedByRubriqueOrderedByOrdre();
-
-
-    List<RubriqueQuestionDTOO> getAll();
-
-    //public String deleteRubriqueComposee(int idRubrique);
 }

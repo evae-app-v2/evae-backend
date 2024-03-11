@@ -35,21 +35,9 @@ public interface RubriqueQuestionRepository extends JpaRepository<RubriqueQuesti
 			Integer questionId
 	);
 
-	boolean existsById_IdRubriqueAndOrdre(
-			Integer rubriqueId,
-			Long ordre
-	);
-
-
 	@Modifying
 	@Transactional
 	@Query("DELETE FROM RubriqueQuestion rq WHERE rq.id.idRubrique = :rubriqueId")
 	void deleteByRubriqueId(@Param("rubriqueId") Integer rubriqueId);
-
-
-
-	@Query("select rq from RubriqueQuestion rq where rq.idQuestion = :idRubrique")
-	List<RubriqueQuestion> findByIdQuestion(@Param("idRubrique") Question idRubrique);
-
 
 }

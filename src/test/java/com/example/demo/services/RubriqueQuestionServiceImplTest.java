@@ -36,37 +36,6 @@ class RubriqueQuestionServiceImplTest {
     @InjectMocks
     private RubriqueQuestionServiceImpl rubriqueQuestionService;
 
-    /*@Test
-    void getAllRubriqueQuestion() {
-        // Création de données fictives pour le test
-        List<RubriqueQuestion> rubriqueQuestions = new ArrayList<>();
-        RubriqueQuestion rubriqueQuestion1 = createMockRubriqueQuestion(1, 1, 1);
-        RubriqueQuestion rubriqueQuestion2 = createMockRubriqueQuestion(1, 2, 2);
-        rubriqueQuestions.add(rubriqueQuestion1);
-        rubriqueQuestions.add(rubriqueQuestion2);
-
-        // Mock de la méthode findAll du repository
-        when(rubriqueQuestionRepository.findAll()).thenReturn(rubriqueQuestions);
-
-        // Appel de la méthode à tester
-        List<RubriqueQuestionDTO> result = rubriqueQuestionService.getAllRubriqueQuestion();
-
-        //
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0).getIdRubrique());
-        assertEquals(1, result.get(0).getIdQuestion());
-        assertEquals(1, result.get(0).getOrdre());
-        assertEquals("COURS", result.get(0).getRubriqueDTO().getDesignation());
-        assertEquals("Contenu", result.get(0).getQuestionDTO().getIntitule());
-        assertEquals("Pauvre", result.get(0).getQuestionDTO().getIdQualificatif().getMaximal());
-
-        assertEquals(1, result.get(1).getIdRubrique());
-        assertEquals(2, result.get(1).getIdQuestion());
-        assertEquals(2, result.get(1).getOrdre());
-        assertEquals("COURS", result.get(1).getRubriqueDTO().getDesignation());
-        assertEquals("Contenu", result.get(1).getQuestionDTO().getIntitule());
-        assertEquals("Pauvre", result.get(1).getQuestionDTO().getIdQualificatif().getMaximal());
-    }*/
 
     private RubriqueQuestion createMockRubriqueQuestion(int idRubrique, int idQuestion, int ordre) {
         RubriqueQuestion rubriqueQuestion = new RubriqueQuestion();
@@ -83,7 +52,6 @@ class RubriqueQuestionServiceImplTest {
         rubriqueQuestion.setOrdre((long) ordre);
 
         // Création des entités liées (Rubrique, Question, Qualificatif)
-        // Ces données peuvent être simplifiées selon votre besoin réel pour les tests
         rubrique.setId(idRubrique);
         rubrique.setType("RBS");
         rubrique.setDesignation("COURS");
@@ -180,48 +148,6 @@ class RubriqueQuestionServiceImplTest {
 
 
     @Test
-    void testGetQuestionsGroupedByRubrique() {
-        // Créer des données de test
-        RubriqueQuestion rubriqueQuestion1 = createMockRubriqueQuestion(1, 1, 1);
-        RubriqueQuestion rubriqueQuestion2 = createMockRubriqueQuestion(1, 2, 2);
-
-        List<RubriqueQuestion> rubriqueQuestions = Arrays.asList(rubriqueQuestion1, rubriqueQuestion2);
-
-        when(rubriqueQuestionRepository.findAll()).thenReturn(rubriqueQuestions);
-
-        // Appeler la méthode à tester
-        Map<Integer, List<RubriqueQuestionDTO>> groupedQuestions = rubriqueQuestionService.getQuestionsGroupedByRubrique();
-
-        // Vérifier les résultats
-        assertEquals(1, groupedQuestions.size());
-        assertEquals(2, groupedQuestions.get(1).size());
-    }
-    @Test
-    void testGetQuestionsGroupedByRubriqueOrderedByOrdre() {
-        // Créer des données de test
-        RubriqueQuestion rubriqueQuestion1 = createMockRubriqueQuestion(1, 1, 2);
-        RubriqueQuestion rubriqueQuestion2 = createMockRubriqueQuestion(1, 2, 1);
-
-        List<RubriqueQuestion> rubriqueQuestions = Arrays.asList(rubriqueQuestion1, rubriqueQuestion2);
-
-        when(rubriqueQuestionRepository.findAll()).thenReturn(rubriqueQuestions);
-
-        // Appeler la méthode à tester
-        Map<Integer, List<RubriqueQuestionDTO>> groupedQuestions = rubriqueQuestionService.getQuestionsGroupedByRubriqueOrderedByOrdre();
-
-        // Vérifier les résultats
-        assertEquals(1, groupedQuestions.size());
-        assertEquals(2, groupedQuestions.get(1).size());
-        assertEquals(1L, groupedQuestions.get(1).get(0).getOrdre());
-        assertEquals(2L, groupedQuestions.get(1).get(1).getOrdre());
-    }
-
-
-
-
-
-
-    @Test
     void testDeleteRubriqueQuestionsByRubriqueId() throws RubriqueNotFoundException {
         // Données de test
         Integer rubriqueId = 1;
@@ -272,16 +198,11 @@ class RubriqueQuestionServiceImplTest {
 
     @Test
     void testDeleteRubriqueQuestionByIds_RubriqueQuestionNotFoundException() {
-        // Données de test
         Integer rubriqueId = 1;
         Integer questionId = 1;
-
-        // Simuler l'absence de la RubriqueQuestion dans le repository
         when(rubriqueQuestionRepository.findById(new RubriqueQuestionId(rubriqueId, questionId))).thenReturn(Optional.empty());
 
-        // Vérifier que l'appel lance une exception RubriqueQuestionNotFoundException
         assertThrows(RubriqueQuestionNotFoundException.class, () -> rubriqueQuestionService.deleteRubriqueQuestionByIds(rubriqueId, questionId));
-        // Vérifier que la méthode deleteById du repository n'est pas appelée
         verify(rubriqueQuestionRepository, never()).deleteById(new RubriqueQuestionId(rubriqueId, questionId));
     }
 
