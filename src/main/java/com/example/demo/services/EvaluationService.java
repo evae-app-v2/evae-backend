@@ -847,6 +847,88 @@ public class EvaluationService {
 	}
 
 
+	public ResponseEntity<String> RepondreEvaluation(ReponseEvaluationDTO requestMap) {
+		System.out.println("Inside Repondre Evaluation:" + requestMap);
+		try {
+			if (jwtFilter.isEtudiant()) {
+				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+
+				ReponseEvaluation reponseEvaluation = reponseEvaluationRepository.findByEtudiantAndEvaluation(user.getNoEtudiant().getNoEtudiant(), requestMap.getIdEvaluation());
+
+				Evaluation evaluation = evaluationRepository.findById(requestMap.getIdEvaluation());
+
+				if (Objects.isNull(reponseEvaluation)) {
+
+					ReponseEvaluation reponseEvaluation1 = new ReponseEvaluation();
+					reponseEvaluation1.setIdEvaluation(evaluation);
+					reponseEvaluation1.setNom(user.getNoEtudiant().getNom());
+					reponseEvaluation1.setPrenom(user.getNoEtudiant().getPrenom());
+					reponseEvaluation1.setCommentaire(requestMap.getCommentaire());
+					reponseEvaluation1.setNoEtudiant(user.getNoEtudiant());
+
+					reponseEvaluationRepository.save(reponseEvaluation1);
+
+					/*List<ReponseRubriqueDTO> reponseRubriqueDTOs = requestMap.getReponseRubriqueDTOs();
+					for (ReponseRubriqueDTO reponseRubriqueDTO : reponseRubriqueDTOs){
+						List<ReponseQuestionDTO> reponseQuestionDTOs = reponseRubriqueDTO.getReponseQuestionDTOs();*/
+
+					List<ReponseQuestionDTO> reponseQuestionDTOs = requestMap.getReponseQuestionDTOs();
+
+					for(ReponseQuestionDTO reponseQuestionDTO : reponseQuestionDTOs){
+						ReponseQuestion reponseQuestion = new ReponseQuestion();
+
+						QuestionEvaluation questionEvaluation = questionEvaluationRepository.findById(reponseQuestionDTO.getIdQuestionEvaluation()).get();
+
+						ReponseQuestionId reponseQuestionId = new ReponseQuestionId();
+						reponseQuestionId.setIdQuestionEvaluation(reponseQuestionDTO.getIdQuestionEvaluation());
+						reponseQuestionId.setIdReponseEvaluation(reponseEvaluation1.getId());
+
+						reponseQuestion.setId(reponseQuestionId);
+						reponseQuestion.setIdReponseEvaluation(reponseEvaluation1);
+						reponseQuestion.setIdQuestionEvaluation(questionEvaluation);
+						reponseQuestion.setPositionnement(reponseQuestionDTO.getPositionnement());
+
+						reponseQuestionRepository.save(reponseQuestion);
+					}
+
+					//}
+
+					return BackendUtils.getResponseEntity("les reponses enregistres avec succes", HttpStatus.OK);
+				} else {
+					return BackendUtils.getResponseEntity("Impossible de repondre plus d une fois ", HttpStatus.BAD_REQUEST);
+				}
+			}
+
+			else {
+				return BackendUtils.getResponseEntity(EvaeBackendConstants.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Boolean> isEtudiantRepondreEvaluation(int idEValuation) {
+		try {
+			if (jwtFilter.isEtudiant()) {
+				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+				ReponseEvaluation reponseEvaluation = reponseEvaluationRepository.findByEtudiantAndEvaluation(user.getNoEtudiant().getNoEtudiant(),idEValuation);
+
+				if(reponseEvaluation != null){
+					return new ResponseEntity<>(true, HttpStatus.OK);
+				}else {
+					return new ResponseEntity<>(false, HttpStatus.OK);
+				}
+			} else {
+				return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+
 
 
 }
