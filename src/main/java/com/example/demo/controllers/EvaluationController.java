@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.example.demo.DTO.ElementConstitutifDTO;
-import com.example.demo.DTO.UniteEnseignementDTO;
-import com.example.demo.DTO.PromotionDTO;
+import com.example.demo.DTO.*;
 import com.example.demo.constants.EvaeBackendConstants;
 import com.example.demo.utils.BackendUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.DTO.EvaluationDTO;
 import com.example.demo.services.EvaluationService;
 
 @RestController
@@ -135,6 +132,26 @@ public class EvaluationController {
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@PostMapping(value = "/repondre")
+	public ResponseEntity<String> RepondreEvaluation(@RequestBody ReponseEvaluationDTO requestMap){
+		try {
+			return evaluationsservice.RepondreEvaluation(requestMap);
+		}catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG , HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@GetMapping(value="/isEtudiantRepondreEvaluation/{idEvaluation}")
+	public ResponseEntity<Boolean> isEtudiantRepondreEvaluation(@PathVariable("idEvaluation") int idEvaluation) {
+		try {
+			return evaluationsservice.isEtudiantRepondreEvaluation(idEvaluation);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
 
 
