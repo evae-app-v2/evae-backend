@@ -1,6 +1,10 @@
 package com.example.demo.DTO;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class ElementConstitutifDTO {
 	
 //    private UniteEnseignementDTO uniteEnseignement;
@@ -9,25 +13,7 @@ public class ElementConstitutifDTO {
 
     private String description;
 
-
-
-	public String getDesignation() {
-		return designation;
-	}
-
-	public void setDesignation(String designation) {
-		this.designation = designation;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
-	
+	private String codeEc;
 
     
 

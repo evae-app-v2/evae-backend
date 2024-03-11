@@ -68,4 +68,10 @@ public class QualificatifService {
         existingQualificatif.setMinimal(qualificatif.getMinimal());
         return qualificatifRepository.save(existingQualificatif);
     }
+    public boolean qualificatifIsUsedInQuestion(int id) {
+        Qualificatif qualificatif = qualificatifRepository.findById(id)
+                .orElseThrow(() -> new NotFoundEntityException("qualificatif"));
+
+        return qualificatif.getQuestions().stream().anyMatch(question -> question.getIdQualificatif().equals(qualificatif));
+    }
 }

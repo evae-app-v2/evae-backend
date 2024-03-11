@@ -5,6 +5,8 @@ import com.example.demo.models.Qualificatif;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 public class QuestionDTO {
@@ -18,6 +20,9 @@ public class QuestionDTO {
     private String intitule;
 
     private Long ordre;
+
+    private Long positionnements;
+
 
 
 }

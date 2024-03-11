@@ -63,5 +63,10 @@ public class QuestionController {
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@GetMapping("/questionIsUsedInRubriqueOrEvaluation/{id}")
+	public boolean questionIsUsedInRubriqueOrEvaluation(@PathVariable Integer id){
+		return questionservice.questionIsUsedInRubriqueOrEvaluation(id);
+	}
+
 
 }

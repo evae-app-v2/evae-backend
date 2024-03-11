@@ -186,4 +186,14 @@ public class QuestionService {
 
 
 
+
+    public boolean questionIsUsedInRubriqueOrEvaluation(int id) {
+        Question question = questionRepository.findById(id).get();
+        System.out.println(question);
+        List<RubriqueQuestion> rubriqueQuestion = RubriquequestionRepository.findByQuestionId(question);
+        List<QuestionEvaluation> questionEvaluation = QuestionevaluationRepository.findByQuestionList(question);
+        System.out.println(rubriqueQuestion.size());
+        System.out.println(questionEvaluation.size());
+        return !rubriqueQuestion.isEmpty() || !questionEvaluation.isEmpty();
+        }
 }

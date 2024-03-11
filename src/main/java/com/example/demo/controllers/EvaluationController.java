@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.example.demo.DTO.ElementConstitutifDTO;
+import com.example.demo.DTO.UniteEnseignementDTO;
+import com.example.demo.DTO.PromotionDTO;
 import com.example.demo.constants.EvaeBackendConstants;
 import com.example.demo.utils.BackendUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,21 @@ public class EvaluationController {
 		}
 	}
 
+	/*@GetMapping("/etudiantR")
+	public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiantR() {
+		try {
+			return evaluationsservice.getEvaluationsEtudiantR();
+		} catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}*/
+
+	@PostMapping("/avancerWorkflow/{idEvaluation}")
+	public ResponseEntity<String> avancerWorkflow(@PathVariable long idEvaluation) {
+		return evaluationsservice.faireAvancerWorkflow(idEvaluation);
+	}
+
 	@PostMapping(value = "/ajouter")
 	public ResponseEntity<String> AjouterEvaluation(@RequestBody Map<String, String> requestMap){
 		try {
@@ -52,10 +70,72 @@ public class EvaluationController {
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG , HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	@PostMapping("/avancerWorkflow/{idEvaluation}")
-	public ResponseEntity<String> avancerWorkflow(@PathVariable long idEvaluation) {
-		return evaluationsservice.faireAvancerWorkflow(idEvaluation);
+	@PostMapping(value="/update")
+	public ResponseEntity<String> modifierEvaluation(@RequestBody Map<String, String> requestMap) {
+		try {
+			return evaluationsservice.update(requestMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+	@GetMapping(value = "/get-Promotions-By-Enseignant")
+	public ResponseEntity<List<PromotionDTO>> getPromotionsByEnseignant(){
+		try {
+			return evaluationsservice.getPromotionsByEnseignant();
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@GetMapping(value = "/get-Formations-By-Enseignant-And-Annee/{anneePro}")
+	public ResponseEntity<List<PromotionDTO>> getPromotionsByEnseignantAndFormation(@PathVariable("anneePro") String anneePro){
+		try {
+			return evaluationsservice.getPromotionsByEnseignantAndFormation(anneePro);
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@GetMapping(value = "/get-Ue-By-Enseignant-And-Formation/{codeFormation}")
+	public ResponseEntity<List<UniteEnseignementDTO>> getUniteEnseignementByCodeFormationAndNoEnseignant(@PathVariable("codeFormation") String codeFormation){
+		try {
+			return evaluationsservice.getUniteEnseignementByCodeFormationAndNoEnseignant(codeFormation);
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@GetMapping(value = "/get-Ec-By-Enseignant-And-Formation/{codeFormation}/{codeUe}")
+	public ResponseEntity<List<ElementConstitutifDTO>> getElementConstitutifByNoEnseignantAndCodeFormationAndCodeUe(@PathVariable("codeFormation") String codeFormation, @PathVariable("codeUe") String codeUe){
+		try {
+			return evaluationsservice.getElementConstitutifByNoEnseignantAndCodeFormationAndCodeUe(codeFormation,codeUe);
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@GetMapping(value="/delete/{id}")
+	public ResponseEntity<String> SupprimerEvaluation(@PathVariable("id") int id) {
+		try {
+			return evaluationsservice.deleteEvaluation(id);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+
 
 
 

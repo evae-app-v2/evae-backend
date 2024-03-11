@@ -16,7 +16,8 @@ import java.util.Set;
 
 public interface RubriqueQuestionRepository extends JpaRepository<RubriqueQuestion, RubriqueQuestionId>{
 
-
+	@Query("SELECT rq FROM RubriqueQuestion rq WHERE rq.idQuestion = :questionId")
+	List<RubriqueQuestion> findByQuestionId(@Param("questionId") Question questionId);
 	@Query("select rq from RubriqueQuestion rq where rq.idQuestion = :question")
 	RubriqueQuestion findByQuestion(@Param("question") Question question);
 

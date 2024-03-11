@@ -43,4 +43,9 @@ public class QualificatifController {
         return qualificatifService.deleteQualificatif(id);
     }
 
+
+    @GetMapping("/qualificatifIsUsedInQuestion/{id}")
+    public boolean qualificatifIsUsedInQuestion(@PathVariable int id){
+        return qualificatifService.qualificatifIsUsedInQuestion(id);
+    }
 }
