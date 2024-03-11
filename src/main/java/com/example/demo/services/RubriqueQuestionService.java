@@ -21,6 +21,8 @@ public interface RubriqueQuestionService {
 
     List<RubriqueQuestion> createRubriqueQuestionsForRubrique(Integer idRubrique, List<Integer> idQuestions);
 
+    List<RubriqueQuestion> updateOrdreRubriqueQuestions(List<RubriqueQuestionDTO> rubriqueQuestionDTOs);
+
     public List<RubriqueQuestionDTO> getAllRubriqueQuestion();
     public String deleteRubriqueQuestionsByRubriqueId(Integer rubriqueId) throws RubriqueNotFoundException;
 

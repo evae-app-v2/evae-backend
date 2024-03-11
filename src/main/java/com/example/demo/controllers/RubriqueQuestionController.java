@@ -65,6 +65,7 @@ public class RubriqueQuestionController {
         return ResponseEntity.ok("enregistrement reussie");
     }
 
+    //USED ADD-MULTIPLE
     @PostMapping("/add-multiple/{idRubrique}")
     public ResponseEntity<List<RubriqueQuestion>> createMultipleRubriqueQuestions(
             @PathVariable Integer idRubrique,
@@ -73,7 +74,6 @@ public class RubriqueQuestionController {
         try {
             List<Integer> idQuestions = (List<Integer>) requestBody.get("idQuestions");
 
-            // Votre code de service pour créer les RubriqueQuestions
             List<RubriqueQuestion> createdRubriqueQuestions = rubriqueQuestionService.createRubriqueQuestionsForRubrique(idRubrique, idQuestions);
 
             return new ResponseEntity<>(createdRubriqueQuestions, HttpStatus.CREATED);
@@ -82,12 +82,12 @@ public class RubriqueQuestionController {
         }
     }
 
-
-   /* @GetMapping("/deleteRubriqueComposee/{rubriqueId}")
-    public ResponseEntity<String> deleteRubriqueComposee(@PathVariable Integer rubriqueId) {
-        rubriqueQuestionService.deleteRubriqueComposee(rubriqueId);
-        return ResponseEntity.ok("Deletion successful.");
-    }*/
+    // USED UPDATE ORDER QUESTION
+    @PostMapping("/update-ordre-question")
+    public ResponseEntity<List<RubriqueQuestion>> updateOrdreRubriqueQuestions(@RequestBody List<RubriqueQuestionDTO> rubriqueQuestionDTOs) {
+        List<RubriqueQuestion> updatedRubriqueQuestions = rubriqueQuestionService.updateOrdreRubriqueQuestions(rubriqueQuestionDTOs);
+        return new ResponseEntity<>(updatedRubriqueQuestions, HttpStatus.OK);
+    }
 
     @GetMapping("/groupedByRubrique")
     public ResponseEntity<Map<Integer, List<RubriqueQuestionDTO>>> getQuestionsGroupedByRubrique() {

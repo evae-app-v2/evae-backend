@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -27,7 +28,8 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
 
     @Autowired
     QuestionService questionservice;
-//USED
+
+    //USED List
     @Override
     public List<RubriqueQuestionDTOO> getAll() {
         Map<Integer, RubriqueQuestionDTOO> rubriqueMap = new HashMap<>();
@@ -62,10 +64,8 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             rubriqueMap.put(rub.getId(), rubriqueQuestionDTOO);
         }
 
-        // Récupérer les rubriques sans questions
         List<RubriqueQuestionDTOO> rubriquesWithoutQuestions = getRubriquesWithoutQuestions();
 
-        // Fusionner les deux listes
         for (RubriqueQuestionDTOO rubriqueWithoutQuestions : rubriquesWithoutQuestions) {
             if (!rubriqueMap.containsKey(rubriqueWithoutQuestions.getRUBRIQUE().getId())) {
                 rubriqueMap.put(rubriqueWithoutQuestions.getRUBRIQUE().getId(), rubriqueWithoutQuestions);
@@ -97,7 +97,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
 
         return result;
     }
-    //USED
+    // USED DELETE QUESTION
     @Override
     public String deleteRubriqueQuestionByIds(Integer rubriqueId, Integer questionId) throws RubriqueQuestionNotFoundException {
         Optional<RubriqueQuestion> rubriqueQuestionOptional = rubriqueQuestionRepository.findById(new RubriqueQuestionId(rubriqueId, questionId));
@@ -110,7 +110,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
     }
 
 
-    // USED
+    // USED DELETE RUBRIQUE
     @Override
     public String deleteRubriqueQuestionsByRubriqueId(Integer rubriqueId) throws RubriqueNotFoundException {
         Optional<Rubrique> rubriqueOptional = rubriqueRepository.findById(rubriqueId);
@@ -123,7 +123,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
         }
     }
 
-    //USED
+
     public RubriqueQuestion createRubriqueQuestion(RubriqueQuestionDTO rubriqueQuestionDTO) {
         RubriqueQuestion rubriqueQuestion = new RubriqueQuestion();
         RubriqueQuestionId rubriqueQuestionId = new RubriqueQuestionId();
@@ -146,6 +146,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
     }
 
 
+    // USED LIST QUESTION
     @Override
     public Set<Question> getQuestionsNotInRubrique(Rubrique rubrique) {
 
@@ -199,7 +200,32 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
     }
 
 
+    @Override
 
+
+    public List<RubriqueQuestion> updateOrdreRubriqueQuestions(List<RubriqueQuestionDTO> rubriqueQuestionDTOs) {
+        List<RubriqueQuestion> updatedRubriqueQuestions = new ArrayList<>();
+
+        for (RubriqueQuestionDTO dto : rubriqueQuestionDTOs) {
+            RubriqueQuestionId rubriqueQuestionId = new RubriqueQuestionId(dto.getIdRubrique(), dto.getIdQuestion());
+            Optional<RubriqueQuestion> optionalRubriqueQuestion = rubriqueQuestionRepository.findById(rubriqueQuestionId);
+
+            if (optionalRubriqueQuestion.isPresent()) {
+                RubriqueQuestion existingRubriqueQuestion = optionalRubriqueQuestion.get();
+                existingRubriqueQuestion.setOrdre(dto.getOrdre());
+                updatedRubriqueQuestions.add(rubriqueQuestionRepository.save(existingRubriqueQuestion));
+            } else {
+                // Gérer le cas où l'enregistrement n'a pas été trouvé
+                // Vous pouvez choisir de lever une exception, de créer un nouvel enregistrement, ou d'ignorer cet élément selon votre logique métier.
+            }
+        }
+
+        return updatedRubriqueQuestions;
+    }
+
+
+
+    // -------------------------- NOT USED ---------------------------------------
     public List<RubriqueQuestionDTO> getAllRubriqueQuestion() {
         List<RubriqueQuestion> rubriqueQuestions = rubriqueQuestionRepository.findAll();
         List<RubriqueQuestionDTO> rubriqueQuestionDTOs = new ArrayList<>();
@@ -225,7 +251,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             questionDTO.setIntitule(question.getIntitule());
             questionDTO.setIdQualificatif(qualificatifDTO);
 
-            dto.setQuestionDTO(questionDTO);
+            //dto.setQuestionDTO(questionDTO);
 
             Rubrique rubrique = rubriqueQuestion.getIdRubrique();
             RubriqueDTO rubriqueDTO = new RubriqueDTO();
@@ -234,7 +260,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             rubriqueDTO.setDesignation(rubrique.getDesignation());
             rubriqueDTO.setOrdre(rubrique.getOrdre());
 
-            dto.setRubriqueDTO(rubriqueDTO);
+            //dto.setRubriqueDTO(rubriqueDTO);
 
             rubriqueQuestionDTOs.add(dto);
         }
@@ -269,7 +295,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             questionDTO.setIntitule(question.getIntitule());
             questionDTO.setIdQualificatif(qualificatifDTO);
 
-            dto.setQuestionDTO(questionDTO);
+            //dto.setQuestionDTO(questionDTO);
 
             Rubrique rubrique = rubriqueQuestion.getIdRubrique();
             RubriqueDTO rubriqueDTO = new RubriqueDTO();
@@ -278,7 +304,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             rubriqueDTO.setDesignation(rubrique.getDesignation());
             rubriqueDTO.setOrdre(rubrique.getOrdre());
 
-            dto.setRubriqueDTO(rubriqueDTO);
+            //dto.setRubriqueDTO(rubriqueDTO);
 
             // Group by idRubrique
             if (groupedQuestions.containsKey(rubrique.getId())) {
@@ -325,7 +351,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             questionDTO.setIntitule(question.getIntitule());
             questionDTO.setIdQualificatif(qualificatifDTO);
 
-            dto.setQuestionDTO(questionDTO);
+            //dto.setQuestionDTO(questionDTO);
 
             Rubrique rubrique = rubriqueQuestion.getIdRubrique();
             RubriqueDTO rubriqueDTO = new RubriqueDTO();
@@ -334,7 +360,7 @@ public class RubriqueQuestionServiceImpl implements RubriqueQuestionService{
             rubriqueDTO.setDesignation(rubrique.getDesignation());
             rubriqueDTO.setOrdre(rubrique.getOrdre());
 
-            dto.setRubriqueDTO(rubriqueDTO);
+            //dto.setRubriqueDTO(rubriqueDTO);
 
             // Group by idRubrique
             if (groupedQuestions.containsKey(rubrique.getId())) {
