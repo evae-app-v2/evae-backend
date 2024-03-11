@@ -57,8 +57,8 @@ public class QualificatifService {
         Qualificatif qualificatifTmin = qualificatifRepository.findByMinmal(qualificatif.getMinimal());
         Qualificatif qualificatifTmax = qualificatifRepository.findByMaxmal(qualificatif.getMinimal());
 
-        if (qualificatifTmin != null) throw new AlreadyUsedException("qualificatif");
-        if (qualificatifTmax != null) throw new AlreadyUsedException("qualificatif");
+        if (qualificatifTmin != null ) { if( qualificatifTmin.getId() != qualificatif.getId()) throw new AlreadyUsedException(" le nom choisie pour le qualitatif");};
+        if (qualificatifTmax != null ) { if( qualificatifTmax.getId() != qualificatif.getId()) throw new AlreadyUsedException(" le nom choisie pour le qualitatif ");};
 
         boolean isUsedInQuestion = existingQualificatif.getQuestions().stream().anyMatch(question -> question.getIdQualificatif().equals(existingQualificatif));
         if (isUsedInQuestion) {

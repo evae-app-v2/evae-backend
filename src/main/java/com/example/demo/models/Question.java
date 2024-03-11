@@ -27,6 +27,7 @@ public class Question {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "NO_ENSEIGNANT")
+    @JsonIgnore
     private Enseignant noEnseignant;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -38,6 +39,7 @@ public class Question {
     private String intitule;
 
     @OneToMany(mappedBy = "idQuestion")
+    @JsonIgnore
     private Set<QuestionEvaluation> questionEvaluations = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idQuestion")

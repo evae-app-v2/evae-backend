@@ -133,7 +133,7 @@ public class QuestionService {
                 RubriqueQuestion RubriqueQuestion = RubriquequestionRepository.findByQuestion(question);
                 QuestionEvaluation QuestionEvaluation = QuestionevaluationRepository.findByQuestion(question);
                 Question question1 = questionRepository.findByIntitule(requestMap.get("intitule"));
-                if (question1 != null)
+                if (question1 != null && question1.getId()!= Integer.parseInt(requestMap.get("id")))
                     return BackendUtils.getResponseEntity(EvaeBackendConstants.EXISTE_DEJA, HttpStatus.INTERNAL_SERVER_ERROR);
                 if (RubriqueQuestion == null || QuestionEvaluation == null) {
                     System.out.println("question : " + question);
@@ -183,6 +183,8 @@ public class QuestionService {
         }
         return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 
 
     public boolean questionIsUsedInRubriqueOrEvaluation(int id) {

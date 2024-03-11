@@ -53,9 +53,6 @@ public class RubriqueServiceImpl implements RubriqueService{
             if (rubriqueRepository.existsByDesignationAndIdNot(rubriqueDTO.getDesignation(), id)) {
                 throw new DuplicateEntityException("rubrique");
             }
-            if (isRubriqueUsedInEvaluation(existingRubrique)) {
-                throw new UsedEntityException("rubrique");
-            }
             existingRubrique.setDesignation(rubriqueDTO.getDesignation());
             return rubriqueRepository.save(existingRubrique);
         } else {

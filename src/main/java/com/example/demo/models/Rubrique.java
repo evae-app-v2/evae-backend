@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "RUBRIQUE")
-@JsonIgnoreProperties({"rubriqueEvaluations", "rubriqueQuestions"}) // Ignorer ces propriétés lors de la sérialisation JSON
+@JsonIgnoreProperties({"rubriqueEvaluations", "rubriqueQuestions"})
 public class Rubrique {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "RUBRIQUE_id_gen")

@@ -29,14 +29,14 @@ public class RubriqueQuestionController {
     private RubriqueRepository rubriqueRepository;
 
 
-    // USED
+    // USED LIST ALL
     @GetMapping("/getAll")
     public ResponseEntity<List<RubriqueQuestionDTOO>> getAllRubriqueQuestion() {
         List<RubriqueQuestionDTOO> rubriqueQuestionDTOs = rubriqueQuestionService.getAll();
         return new ResponseEntity<>(rubriqueQuestionDTOs, HttpStatus.OK);
     }
 
-    // USED
+    // USED DELETE QUESTION
     @GetMapping("/delete/{rubriqueId}/{questionId}")
     public ResponseEntity<?> deleteRubriqueQuestionByIds(@PathVariable Integer rubriqueId, @PathVariable Integer questionId) {
         try {
@@ -47,7 +47,7 @@ public class RubriqueQuestionController {
         }
     }
 
-    // USED
+    // USED DELETE RUBRIQUE
     @GetMapping("/delete/{rubriqueId}")
     public ResponseEntity<?> deleteRubriqueQuestionsByRubriqueId(@PathVariable Integer rubriqueId) {
         try {
@@ -58,65 +58,44 @@ public class RubriqueQuestionController {
         }
     }
 
-    // USED
+    // USED CREATE ONE
     @PostMapping("/add")
     public ResponseEntity<String> createRubriqueQuestion(@RequestBody RubriqueQuestionDTO rubriqueQuestionDTO) {
         RubriqueQuestion rubriqueQuestion = rubriqueQuestionService.createRubriqueQuestion(rubriqueQuestionDTO);
         return ResponseEntity.ok("enregistrement reussie");
     }
 
-    @GetMapping("/deleteRubriqueComposee/{rubriqueId}")
-    public ResponseEntity<String> deleteRubriqueComposee(@PathVariable Integer rubriqueId) {
-        rubriqueQuestionService.deleteRubriqueComposee(rubriqueId);
-        return ResponseEntity.ok("Deletion successful.");
-    }
-
-    @GetMapping("/groupedByRubrique")
-    public ResponseEntity<Map<Integer, List<RubriqueQuestionDTO>>> getQuestionsGroupedByRubrique() {
-        Map<Integer, List<RubriqueQuestionDTO>> groupedQuestions = rubriqueQuestionService.getQuestionsGroupedByRubrique();
-        return new ResponseEntity<>(groupedQuestions, HttpStatus.OK);
-    }
-
-
-
-    @GetMapping("/{rubriqueId}/questions")
-    public ResponseEntity<Set<Question>> getQuestionsByRubrique(@PathVariable Integer rubriqueId) {
-        Rubrique rubrique = rubriqueRepository.findById(rubriqueId)
-                .orElseThrow(() -> new RuntimeException("Rubrique not found"));
-
-        Set<Question> questions = rubriqueQuestionService.getQuestionsByRubrique(rubrique);
-        return ResponseEntity.ok(questions);
-    }
-
-
-
-
-
-
-
-
-    @PostMapping("/update/{rubriqueId1}/{questionId1}/{rubriqueId2}/{questionId2}/swapOrdre")
-    public ResponseEntity<?> swapOrdre(@PathVariable Integer rubriqueId1,
-                                       @PathVariable Integer questionId1,
-                                       @PathVariable Integer rubriqueId2,
-                                       @PathVariable Integer questionId2) {
+    //USED ADD-MULTIPLE
+    @PostMapping("/add-multiple/{idRubrique}")
+    public ResponseEntity<List<RubriqueQuestion>> createMultipleRubriqueQuestions(
+            @PathVariable Integer idRubrique,
+            @RequestBody Map<String, Object> requestBody
+    ) {
         try {
-            if (!rubriqueId1.equals(rubriqueId2)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("idRubrique1 and idRubrique2 must be equal.");
-            }
+            List<Integer> idQuestions = (List<Integer>) requestBody.get("idQuestions");
 
-            rubriqueQuestionService.swapOrdre(rubriqueId1, questionId1, rubriqueId2, questionId2);
-            return ResponseEntity.ok("Ordre values swapped successfully.");
-        } catch (RubriqueQuestionNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            List<RubriqueQuestion> createdRubriqueQuestions = rubriqueQuestionService.createRubriqueQuestionsForRubrique(idRubrique, idQuestions);
+
+            return new ResponseEntity<>(createdRubriqueQuestions, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    //aprem2
-    @GetMapping("/groupedByRubriqueOrderedByOrdre")
-    public ResponseEntity<Map<Integer, List<RubriqueQuestionDTO>>> getQuestionsGroupedByRubriqueOrderedByOrdre() {
-        Map<Integer, List<RubriqueQuestionDTO>> groupedQuestions = rubriqueQuestionService.getQuestionsGroupedByRubriqueOrderedByOrdre();
-        return new ResponseEntity<>(groupedQuestions, HttpStatus.OK);
+    // USED UPDATE ORDER QUESTION
+    @PostMapping("/update-ordre-question")
+    public ResponseEntity<List<RubriqueQuestion>> updateOrdreRubriqueQuestions(@RequestBody List<RubriqueQuestionDTO> rubriqueQuestionDTOs) {
+        List<RubriqueQuestion> updatedRubriqueQuestions = rubriqueQuestionService.updateOrdreRubriqueQuestions(rubriqueQuestionDTOs);
+        return new ResponseEntity<>(updatedRubriqueQuestions, HttpStatus.OK);
+    }
+
+    // USED QUESIONS NOT IN RUBRIQUE
+    @GetMapping("/getQuestions/{rubriqueId}")
+    public ResponseEntity<Set<Question>> getQuestionsNotInRubrique(@PathVariable Integer rubriqueId) {
+        Rubrique rubrique = rubriqueRepository.findById(rubriqueId)
+                .orElseThrow(() -> new RuntimeException("Rubrique not found"));
+        Set<Question> questions = rubriqueQuestionService.getQuestionsNotInRubrique(rubrique);
+        return ResponseEntity.ok(questions);
     }
 
 

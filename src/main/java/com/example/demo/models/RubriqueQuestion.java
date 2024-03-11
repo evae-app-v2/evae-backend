@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public class RubriqueQuestion {
     private RubriqueQuestionId id;
 
     @MapsId("idRubrique")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ID_RUBRIQUE", nullable = false)
     private Rubrique idRubrique;
@@ -22,6 +24,7 @@ public class RubriqueQuestion {
     @MapsId("idQuestion")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ID_QUESTION", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Question idQuestion;
 
     @Column(name = "ORDRE", nullable = false)
