@@ -102,6 +102,7 @@ public class EvaluationService {
 
 
 
+
 	public ResponseEntity<String> AjouterEvaluation(Map<String, String> requestMap) {
 		System.out.println("Inside Ajout Evaluation:" + requestMap);
 		try {
@@ -494,6 +495,7 @@ public class EvaluationService {
 							questionDTO.setIntitule(rubriqueQuestion.getIdQuestion().getIntitule());
 							questionDTO.setType(rubriqueQuestion.getIdQuestion().getType());
 							questionDTO.setOrdre(rubriqueQuestion.getOrdre());
+							//questionDTO.setPositionnements(0L);
 
 							QualificatifDTO qualificatifDTO = new QualificatifDTO();
 							qualificatifDTO.setId(rubriqueQuestion.getIdQuestion().getIdQualificatif().getId());
@@ -630,7 +632,7 @@ public class EvaluationService {
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
 				String codeFormation = Optional.ofNullable(user.getNoEtudiant().getPromotion().getId().getCodeFormation()).orElse("");
 				String anneeUniversitaire = Optional.ofNullable(user.getNoEtudiant().getPromotion().getId().getAnneeUniversitaire()).orElse("");
-
+				System.out.println("NoEtudiant: "+user.getNoEtudiant().getNoEtudiant());
 				if (codeFormation.isEmpty() || anneeUniversitaire.isEmpty()) {
 					logger.error("Code de formation ou année universitaire vide.");
 					return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
@@ -679,6 +681,12 @@ public class EvaluationService {
 
 						evaluationQuestionDTO.setType(rubevaluation.getIdRubrique().getType());
 
+						ReponseEvaluation reponseEvaluation = new ReponseEvaluation();
+
+
+
+
+
 						// Liste des questions avec réponses aléatoires
 						List<RubriqueQuestion> rubriqueQuestions = RubriquequestionRepository.findByIdRubrique(rubevaluation.getIdRubrique().getId());
 
@@ -690,15 +698,26 @@ public class EvaluationService {
 							questionDTO.setType(rubriqueQuestion.getIdQuestion().getType());
 							questionDTO.setOrdre(rubriqueQuestion.getOrdre());
 
-							System.out.println("ID QUestion"+rubriqueQuestion.getIdQuestion().getId());
-							System.out.println("RUBRIQUE EVALUATION"+rubriqueQuestion.getIdRubrique().getId());
-							System.out.println("QUESTION "+rubriqueQuestion.getIdQuestion().getId());
+
+
+							reponseEvaluation = reponseEvaluationRepository.findByEtudiantEvaluation(user.getNoEtudiant().getNoEtudiant(), evaluation.getId());
+
+							if (reponseEvaluation != null) {
+								System.out.println("ID Reponse EValuation"+reponseEvaluation.getId());
+
+								ReponseQuestion reponse = reponseQuestionRepository.findByQuestionIdQuestionRubriqueEva(rubriqueQuestion.getIdQuestion().getId(),rubevaluation.getId(),evaluation.getId() ,reponseEvaluation.getId());
+
+								if (reponse != null) {
+									questionDTO.setPositionnements((long) Math.toIntExact(reponse.getPositionnement()));
+								} else {
+									questionDTO.setPositionnements(0L);
+								}
+							} else {
+								questionDTO.setPositionnements(0L);
+							}
 
 
 
-							ReponseQuestion reponse = reponseQuestionRepository.findByQuestionIdQuestionRubriqueEva(rubriqueQuestion.getIdQuestion().getId(),rubevaluation.getId(),evaluation.getId() );
-
-								questionDTO.setPositionnements((long) Math.toIntExact(reponse.getPositionnement()));
 
 
 
