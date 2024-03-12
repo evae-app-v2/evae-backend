@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.example.demo.DTO.*;
 import com.example.demo.constants.EvaeBackendConstants;
+import com.example.demo.models.Formation;
 import com.example.demo.utils.BackendUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -98,6 +99,17 @@ public class EvaluationController {
 		}
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+	/*@GetMapping(value = "/get-Formations")
+	public ResponseEntity<List<Formation>> getFormations(){
+		try {
+			return evaluationsservice.getFormations();
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}*/
 
 	@GetMapping(value = "/get-Ue-By-Enseignant-And-Formation/{codeFormation}")
 	public ResponseEntity<List<UniteEnseignementDTO>> getUniteEnseignementByCodeFormationAndNoEnseignant(@PathVariable("codeFormation") String codeFormation){

@@ -98,9 +98,8 @@ public class EvaluationService {
 	QuestionEvaluationRepository questionEvaluationRepository;
 	@Autowired
 	ReponseQuestionRepository reponseQuestionRepository;
-
-
-
+	@Autowired
+	private FormationRepository formationRepository;
 
 
 	public ResponseEntity<String> AjouterEvaluation(Map<String, String> requestMap) {
@@ -216,7 +215,9 @@ public class EvaluationService {
 		try {
 			if (jwtFilter.isEnseignant()) {
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
-				List<Promotion> promotions = promotionRepository.getPromotionsByNoEnseignant(user.getNoEnseignant());
+				//List<Promotion> promotions = promotionRepository.getPromotionsByNoEnseignant(user.getNoEnseignant());
+				List<Promotion> promotions = promotionRepository.findAll();
+
 				List<PromotionDTO> promotionDTOs = new ArrayList<>();
 
 				for (Promotion promotion : promotions) {
@@ -241,15 +242,16 @@ public class EvaluationService {
 		try {
 			if (jwtFilter.isEnseignant()) {
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
-				List<Promotion> promotions = promotionRepository.getPromotionsByAnneeProAndNoEnseignant(user.getNoEnseignant(),anneePro);
+				//List<Promotion> promotions = promotionRepository.getPromotionsByAnneeProAndNoEnseignant(anneePro);
+				//List<Promotion> promotions = promotionRepository.findAll();
+				List<Formation> formations = formationRepository.findAll();
+
 				List<PromotionDTO> promotionDTOs = new ArrayList<>();
 
-				for (Promotion promotion : promotions) {
+				for (Formation formation : formations) {
 					PromotionDTO promotionDTO = new PromotionDTO();
-
-					promotionDTO.setAnneePro(promotion.getId().getAnneeUniversitaire());
-					promotionDTO.setCodeFormation(promotion.getCodeFormation().getCodeFormation());
-
+					//promotionDTO.setAnneePro(formation.getNomFormation());
+					promotionDTO.setCodeFormation(formation.getCodeFormation());
 					promotionDTOs.add(promotionDTO);
 
 				}
@@ -262,6 +264,24 @@ public class EvaluationService {
 		}
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+
+	public ResponseEntity<List<Formation>> getFormations() {
+		try {
+			if (jwtFilter.isEnseignant()) {
+				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+				List<Formation> formations = formationRepository.getAllFormations();
+
+				return new ResponseEntity<>(formations, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(new ArrayList<>(), HttpStatus.UNAUTHORIZED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 
 	public ResponseEntity<List<UniteEnseignementDTO>> getUniteEnseignementByCodeFormationAndNoEnseignant(String codeFormation) {
 		try {

@@ -21,7 +21,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, PromotionI
     @Query("select p from Promotion p where p.noEnseignant = :noEnseignant")
     List<Promotion> getPromotionsByNoEnseignant(@Param("noEnseignant") Enseignant noEnseignant);
 
-    @Query("select p from Promotion p where p.noEnseignant = :noEnseignant and p.id.anneeUniversitaire = :anneePro")
-    List<Promotion> getPromotionsByAnneeProAndNoEnseignant(@Param("noEnseignant") Enseignant noEnseignant, @Param("anneePro") String anneePro);
+    @Query("select p from Promotion p where p.id.codeFormation = :anneePro")
+    List<Promotion> getPromotionsByAnneeProAndNoEnseignant(@Param("anneePro") String anneePro);
 
 }
