@@ -12,6 +12,6 @@ import java.util.List;
 public interface FormationRepository extends JpaRepository<Formation, String> {
     @Query("select f from Formation f ")
     List<Formation> getAllFormations();
-
-
+    @Query("select f from Formation f")
+    List<Formation> getFormations();
 }

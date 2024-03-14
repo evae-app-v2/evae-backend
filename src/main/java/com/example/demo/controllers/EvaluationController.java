@@ -69,7 +69,7 @@ public class EvaluationController {
 	}
 
 	@PostMapping(value="/update")
-	public ResponseEntity<String> modifierEvaluation(@RequestBody Map<String, String> requestMap) {
+	public ResponseEntity<String> modifierEvaluation(@RequestBody EvaluationUpdateDTO requestMap) {
 		try {
 			return evaluationsservice.update(requestMap);
 		} catch (Exception e) {
