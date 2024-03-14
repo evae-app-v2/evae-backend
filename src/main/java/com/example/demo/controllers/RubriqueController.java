@@ -63,4 +63,9 @@ public class RubriqueController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/rubriqueIsUsedInEvaluation/{id}")
+    public boolean questionIsUsedInRubriqueOrEvaluation(@PathVariable Integer id){
+        return rubriqueService.isRubriqueUsedInEvaluation(rubriqueService.getRubriqueById(id));
+    }
+
 }

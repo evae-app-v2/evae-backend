@@ -50,11 +50,16 @@ public class RubriqueServiceImpl implements RubriqueService{
     public Rubrique updateRubrique(Integer id, RubriqueDTO rubriqueDTO) {
         if (rubriqueRepository.existsById(id)) {
             Rubrique existingRubrique = rubriqueRepository.findById(id).orElse(null);
+            if (isRubriqueUsedInEvaluation(existingRubrique)) {
+                throw new UsedEntityException("rubrique");
+            }
+
             if (rubriqueRepository.existsByDesignationAndIdNot(rubriqueDTO.getDesignation(), id)) {
                 throw new DuplicateEntityException("rubrique");
             }
             existingRubrique.setDesignation(rubriqueDTO.getDesignation());
             return rubriqueRepository.save(existingRubrique);
+
         } else {
             throw new NotFoundEntityException("rubrique");
         }
@@ -73,12 +78,13 @@ public class RubriqueServiceImpl implements RubriqueService{
         }
     }
 
-    private boolean isRubriqueUsedInEvaluation(Rubrique rubrique) {
+    @Override
+    public boolean isRubriqueUsedInEvaluation(Rubrique rubrique) {
         if (rubrique == null) {
             return false;
         }
-        return rubrique.getRubriqueEvaluations() != null && !rubrique.getRubriqueEvaluations().isEmpty() ||
-                rubrique.getRubriqueQuestions() != null && !rubrique.getRubriqueQuestions().isEmpty();
+        return rubrique.getRubriqueEvaluations() != null && !rubrique.getRubriqueEvaluations().isEmpty() ;
+//                || rubrique.getRubriqueQuestions() != null && !rubrique.getRubriqueQuestions().isEmpty();
     }
 
     @Override
