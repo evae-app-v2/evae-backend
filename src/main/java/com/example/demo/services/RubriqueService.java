@@ -12,6 +12,9 @@ public interface RubriqueService {
     Rubrique createRubrique(Rubrique rubrique);
     Rubrique updateRubrique(Integer id, RubriqueDTO rubriqueDTO);
     void deleteRubrique(Integer id);
+
+    boolean isRubriqueUsedInEvaluation(Rubrique rubrique);
+
     Optional<Rubrique> findRubriqueByDesignation(String designation);
     void updateOrdre(List<Rubrique> updatedRubriquesData);
 }
