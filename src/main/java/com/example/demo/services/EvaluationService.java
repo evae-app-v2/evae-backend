@@ -100,6 +100,9 @@ public class EvaluationService {
 	ReponseQuestionRepository reponseQuestionRepository;
 	@Autowired
 	private FormationRepository formationRepository;
+	private RubriqueRepository rubriqueRepository;
+	@Autowired
+	private QuestionRepository questionRepository;
 
 
 	public ResponseEntity<String> AjouterEvaluation(Map<String, String> requestMap) {
@@ -154,10 +157,10 @@ public class EvaluationService {
 	}
 
 	@Transactional
-	public ResponseEntity<String> update(Map<String, String> requestMap) {
+	public ResponseEntity<String> update(EvaluationUpdateDTO requestMap) {
 		try {
 			if (jwtFilter.isEnseignant()) {
-				Evaluation evaluation = evaluationRepository.findByNoEvaluation(Short.parseShort(requestMap.get("noEvaluation")));
+				Evaluation evaluation = evaluationRepository.findByNoEvaluation(Short.parseShort(requestMap.getNoEvaluation()));
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
 
 
@@ -168,31 +171,79 @@ public class EvaluationService {
 						System.out.println("evaluation : " + evaluation);
 
 						ElementConstitutifId ecId = new ElementConstitutifId();
-						ecId.setCodeFormation(requestMap.get("codeFormation"));
-						ecId.setCodeEc(requestMap.get("codeEC"));
-						ecId.setCodeUe(requestMap.get("codeUE"));
+						ecId.setCodeFormation(requestMap.getCodeFormation());
+						ecId.setCodeEc(requestMap.getCodeEC());
+						ecId.setCodeUe(requestMap.getCodeUE());
 
 						ElementConstitutif ec = elementConstitutifRepository.findByElementConstitutifId(ecId);
 						String ecString = "";
 						if(ec != null){
-							ecString = requestMap.get("codeEC");
+							ecString = requestMap.getCodeEC();
 						}
 						System.out.println("codeEC : "+ ecString);
 
 						PromotionId proId = new PromotionId();
-						proId.setAnneeUniversitaire(requestMap.get("promotion"));
-						proId.setCodeFormation(requestMap.get("codeFormation"));
+						proId.setAnneeUniversitaire(requestMap.getPromotion());
+						proId.setCodeFormation(requestMap.getCodeFormation());
 
 						Promotion pro = promotionRepository.findByPromotionId(proId);
 						System.out.println("promotion : " + pro);
 
 						UniteEnseignementId UeId = new UniteEnseignementId();
-						UeId.setCodeUe(requestMap.get("codeUE"));
-						UeId.setCodeFormation(requestMap.get("codeFormation"));
+						UeId.setCodeUe(requestMap.getCodeUE());
+						UeId.setCodeFormation(requestMap.getCodeFormation());
 
 						UniteEnseignement ue = uniteEnseignementRepository.findByUniteEnseignementId(UeId);
 
-						evaluationRepository.updateEvaluation(requestMap.get("codeFormation"), requestMap.get("promotion"), LocalDate.parse(requestMap.get("debutReponse")), LocalDate.parse(requestMap.get("finReponse")), requestMap.get("designation"), ecString, requestMap.get("codeUE"), Short.parseShort(requestMap.get("noEvaluation")), requestMap.get("periode"));
+						List<RubriqueEvaluationDTO> rubriqueEvaluationDTOs = requestMap.getRubriques();
+						System.out.println("liste des rubriques :" + rubriqueEvaluationDTOs);
+						if(rubriqueEvaluationDTOs != null){
+							for (RubriqueEvaluationDTO rubriqueEvaluationDTO : rubriqueEvaluationDTOs){
+								RubriqueEvaluation rubriqueEvaluation = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluationAndRubrique(rubriqueEvaluationDTO.getIdEvaluation(),rubriqueEvaluationDTO.getIdRubrique());
+								if (rubriqueEvaluation != null){
+									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation.getQuestionEvaluations();
+									if (questionEvaluationList != null){
+										questionEvaluationRepository.deleteAll(questionEvaluationList);
+									}
+									rubriqueEvaluationRepository.delete(rubriqueEvaluation);
+								}
+								RubriqueEvaluation newRubriqueEvaluation = new RubriqueEvaluation();
+								Evaluation newEvaluation = evaluationRepository.findById(rubriqueEvaluationDTO.getIdEvaluation());
+								Rubrique newRubrique = rubriqueRepository.findById(rubriqueEvaluationDTO.getIdRubrique()).get();
+								short ordreRubriqueEvaluation = (short) rubriqueEvaluationDTO.getOrdre();
+
+								List<QuestionEvaluation> questionEvaluationList = new ArrayList<>();
+
+								newRubriqueEvaluation.setIdEvaluation(newEvaluation);
+								newRubriqueEvaluation.setIdRubrique(newRubrique);
+								newRubriqueEvaluation.setOrdre(ordreRubriqueEvaluation);
+								newRubriqueEvaluation.setDesignation(newRubrique.getDesignation());
+
+								rubriqueEvaluationRepository.save(newRubriqueEvaluation);
+
+
+								List<QuestionEvaluationDTO> questionEvaluationDTOs = rubriqueEvaluationDTO.getQuestionEvaluations();
+								for (QuestionEvaluationDTO questionEvaluationDTO : questionEvaluationDTOs){
+									QuestionEvaluation newQuestionEvaluation = new QuestionEvaluation();
+
+									short ordreQuestionEvaluation = (short) questionEvaluationDTO.getOrdre();
+									Question question = questionRepository.findById(questionEvaluationDTO.getIdQuestion()).get();
+
+									newQuestionEvaluation.setOrdre(ordreQuestionEvaluation);
+									newQuestionEvaluation.setIdQuestion(question);
+									newQuestionEvaluation.setIdQualificatif(question.getIdQualificatif());
+									newQuestionEvaluation.setIntitule(question.getIntitule());
+									newQuestionEvaluation.setIdRubriqueEvaluation(newRubriqueEvaluation);
+
+									questionEvaluationRepository.save(newQuestionEvaluation);
+
+								}
+							}
+
+						}
+
+
+						evaluationRepository.updateEvaluation(requestMap.getCodeFormation(), requestMap.getPromotion(), LocalDate.parse(requestMap.getDebutReponse()), LocalDate.parse(requestMap.getFinReponse()), requestMap.getDesignation(), ecString, requestMap.getCodeUE(), Short.parseShort(requestMap.getNoEvaluation()), requestMap.getPeriode());
 						return BackendUtils.getResponseEntity(EvaeBackendConstants.USER_STATUS, HttpStatus.OK);
 					}else{
 						return BackendUtils.getResponseEntity("Evaluation n est pas en cours d elaboration", HttpStatus.BAD_REQUEST);
@@ -707,6 +758,14 @@ public class EvaluationService {
 		}
 		return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+
+
+
+
+
+
+
 
 
 

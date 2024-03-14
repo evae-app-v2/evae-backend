@@ -99,7 +99,7 @@ public class QuestionService {
 
     public ResponseEntity<List<QuestionDTO>> getQuestions() {
         try {
-            if (jwtFilter.isAdmin()) {
+            if (jwtFilter.isAdmin() || jwtFilter.isEnseignant()) {
                 List<Question> questions = questionRepository.findAll();
                 List<QuestionDTO> QuestionDTOs = new ArrayList<>();
 
