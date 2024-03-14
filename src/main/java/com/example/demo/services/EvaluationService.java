@@ -100,6 +100,7 @@ public class EvaluationService {
 	ReponseQuestionRepository reponseQuestionRepository;
 	@Autowired
 	private FormationRepository formationRepository;
+	@Autowired
 	private RubriqueRepository rubriqueRepository;
 	@Autowired
 	private QuestionRepository questionRepository;
@@ -198,15 +199,29 @@ public class EvaluationService {
 						List<RubriqueEvaluationDTO> rubriqueEvaluationDTOs = requestMap.getRubriques();
 						System.out.println("liste des rubriques :" + rubriqueEvaluationDTOs);
 						if(rubriqueEvaluationDTOs != null){
+							List<RubriqueEvaluation> rubriqueEvaluationListe = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation((Short.parseShort(requestMap.getNoEvaluation())));
+							for (RubriqueEvaluation rubriqueEvaluation2 : rubriqueEvaluationListe){
+								if(rubriqueEvaluation2 != null){
+									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation2.getQuestionEvaluations();
+									if (questionEvaluationList != null){
+										questionEvaluationRepository.deleteAll(questionEvaluationList);
+									}
+									rubriqueEvaluationRepository.delete(rubriqueEvaluation2);
+								}
+							}
 							for (RubriqueEvaluationDTO rubriqueEvaluationDTO : rubriqueEvaluationDTOs){
-								RubriqueEvaluation rubriqueEvaluation = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluationAndRubrique(rubriqueEvaluationDTO.getIdEvaluation(),rubriqueEvaluationDTO.getIdRubrique());
+								//List<RubriqueEvaluation> rubriqueEvaluationList = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation(rubriqueEvaluationDTO.getIdEvaluation());
+								/*RubriqueEvaluation rubriqueEvaluation = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluationAndRubrique(rubriqueEvaluationDTO.getIdEvaluation(),rubriqueEvaluationDTO.getIdRubrique());
+
+
+
 								if (rubriqueEvaluation != null){
 									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation.getQuestionEvaluations();
 									if (questionEvaluationList != null){
 										questionEvaluationRepository.deleteAll(questionEvaluationList);
 									}
 									rubriqueEvaluationRepository.delete(rubriqueEvaluation);
-								}
+								}*/
 								RubriqueEvaluation newRubriqueEvaluation = new RubriqueEvaluation();
 								Evaluation newEvaluation = evaluationRepository.findById(rubriqueEvaluationDTO.getIdEvaluation());
 								Rubrique newRubrique = rubriqueRepository.findById(rubriqueEvaluationDTO.getIdRubrique()).get();
@@ -240,6 +255,17 @@ public class EvaluationService {
 								}
 							}
 
+						}else{
+							List<RubriqueEvaluation> rubriqueEvaluationList = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation((Short.parseShort(requestMap.getNoEvaluation())));
+							for (RubriqueEvaluation rubriqueEvaluation1 : rubriqueEvaluationList){
+								if(rubriqueEvaluation1 != null){
+									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation1.getQuestionEvaluations();
+									if (questionEvaluationList != null){
+										questionEvaluationRepository.deleteAll(questionEvaluationList);
+									}
+									rubriqueEvaluationRepository.delete(rubriqueEvaluation1);
+								}
+							}
 						}
 
 

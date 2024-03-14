@@ -24,4 +24,11 @@ public interface RubriqueEvaluationRepository extends JpaRepository<RubriqueEval
 
 	@Query("select re from RubriqueEvaluation re where re.idEvaluation.id = :idEvaluation and re.idRubrique.id = :idRubrique")
 	RubriqueEvaluation getRubriqueEvaluationByEvaluationAndRubrique(@Param("idEvaluation") int idEvaluation, @Param("idRubrique") int idRubrique);
+
+
+
+
+
+	@Query("select re from RubriqueEvaluation re where re.idEvaluation.noEvaluation = :noEvaluation ")
+	List<RubriqueEvaluation> getRubriqueEvaluationByEvaluation(@Param("noEvaluation") short noEvaluation);
 }
