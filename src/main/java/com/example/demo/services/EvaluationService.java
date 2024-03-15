@@ -583,6 +583,11 @@ public class EvaluationService {
 					evaluationDTO.setNoEvaluation(evaluation.getNoEvaluation());
 					evaluationDTO.setPeriode(evaluation.getPeriode());
 					evaluationDTO.setPromotion(evaluation.getPromotion().getId().getAnneeUniversitaire());
+					if (evaluation.getElementConstitutif() != null) {
+						evaluationDTO.setCodeEC(evaluation.getElementConstitutif().getId().getCodeEc());
+					}else {
+						evaluationDTO.setCodeEC("");
+					}
 
 					EnseignantDTO ens = new EnseignantDTO();
 					ens.setEmailUbo(evaluation.getNoEnseignant().getEmailUbo());
