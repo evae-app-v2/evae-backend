@@ -296,14 +296,18 @@ public class EvaluationService {
 				List<Promotion> promotions = promotionRepository.findAll();
 
 				List<PromotionDTO> promotionDTOs = new ArrayList<>();
+				Set<String> uniqueAnnees = new HashSet<>(); // Utilisation d'un ensemble pour stocker les années universitaires uniques
 
 				for (Promotion promotion : promotions) {
-					PromotionDTO promotionDTO = new PromotionDTO();
+					String anneeUniversitaire = promotion.getId().getAnneeUniversitaire();
+					if (!uniqueAnnees.contains(anneeUniversitaire)) { // Vérifie si l'année universitaire est déjà ajoutée
+						PromotionDTO promotionDTO = new PromotionDTO();
+						promotionDTO.setAnneePro(anneeUniversitaire);
+						promotionDTO.setCodeFormation(promotion.getCodeFormation().getCodeFormation());
 
-					promotionDTO.setAnneePro(promotion.getId().getAnneeUniversitaire());
-					promotionDTO.setCodeFormation(promotion.getCodeFormation().getCodeFormation());
-
-					promotionDTOs.add(promotionDTO);
+						promotionDTOs.add(promotionDTO);
+						uniqueAnnees.add(anneeUniversitaire); // Ajoute l'année universitaire à l'ensemble des années uniques
+					}
 				}
 				return new ResponseEntity<>(promotionDTOs, HttpStatus.OK);
 			} else {
