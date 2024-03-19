@@ -100,10 +100,6 @@ public class EvaluationService {
 	ReponseQuestionRepository reponseQuestionRepository;
 	@Autowired
 	private FormationRepository formationRepository;
-	@Autowired
-	private RubriqueRepository rubriqueRepository;
-	@Autowired
-	private QuestionRepository questionRepository;
 
 
 	public ResponseEntity<String> AjouterEvaluation(Map<String, String> requestMap) {
@@ -158,10 +154,10 @@ public class EvaluationService {
 	}
 
 	@Transactional
-	public ResponseEntity<String> update(EvaluationUpdateDTO requestMap) {
+	public ResponseEntity<String> update(Map<String, String> requestMap) {
 		try {
 			if (jwtFilter.isEnseignant()) {
-				Evaluation evaluation = evaluationRepository.findByNoEvaluation(Short.parseShort(requestMap.getNoEvaluation()));
+				Evaluation evaluation = evaluationRepository.findByNoEvaluation(Short.parseShort(requestMap.get("noEvaluation")));
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
 
 
@@ -172,104 +168,31 @@ public class EvaluationService {
 						System.out.println("evaluation : " + evaluation);
 
 						ElementConstitutifId ecId = new ElementConstitutifId();
-						ecId.setCodeFormation(requestMap.getCodeFormation());
-						ecId.setCodeEc(requestMap.getCodeEC());
-						ecId.setCodeUe(requestMap.getCodeUE());
+						ecId.setCodeFormation(requestMap.get("codeFormation"));
+						ecId.setCodeEc(requestMap.get("codeEC"));
+						ecId.setCodeUe(requestMap.get("codeUE"));
 
 						ElementConstitutif ec = elementConstitutifRepository.findByElementConstitutifId(ecId);
 						String ecString = "";
 						if(ec != null){
-							ecString = requestMap.getCodeEC();
+							ecString = requestMap.get("codeEC");
 						}
 						System.out.println("codeEC : "+ ecString);
 
 						PromotionId proId = new PromotionId();
-						proId.setAnneeUniversitaire(requestMap.getPromotion());
-						proId.setCodeFormation(requestMap.getCodeFormation());
+						proId.setAnneeUniversitaire(requestMap.get("promotion"));
+						proId.setCodeFormation(requestMap.get("codeFormation"));
 
 						Promotion pro = promotionRepository.findByPromotionId(proId);
 						System.out.println("promotion : " + pro);
 
 						UniteEnseignementId UeId = new UniteEnseignementId();
-						UeId.setCodeUe(requestMap.getCodeUE());
-						UeId.setCodeFormation(requestMap.getCodeFormation());
+						UeId.setCodeUe(requestMap.get("codeUE"));
+						UeId.setCodeFormation(requestMap.get("codeFormation"));
 
 						UniteEnseignement ue = uniteEnseignementRepository.findByUniteEnseignementId(UeId);
 
-						List<RubriqueEvaluationDTO> rubriqueEvaluationDTOs = requestMap.getRubriques();
-						System.out.println("liste des rubriques :" + rubriqueEvaluationDTOs);
-						if(rubriqueEvaluationDTOs != null){
-							List<RubriqueEvaluation> rubriqueEvaluationListe = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation((Short.parseShort(requestMap.getNoEvaluation())));
-							for (RubriqueEvaluation rubriqueEvaluation2 : rubriqueEvaluationListe){
-								if(rubriqueEvaluation2 != null){
-									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation2.getQuestionEvaluations();
-									if (questionEvaluationList != null){
-										questionEvaluationRepository.deleteAll(questionEvaluationList);
-									}
-									rubriqueEvaluationRepository.delete(rubriqueEvaluation2);
-								}
-							}
-							for (RubriqueEvaluationDTO rubriqueEvaluationDTO : rubriqueEvaluationDTOs){
-								//List<RubriqueEvaluation> rubriqueEvaluationList = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation(rubriqueEvaluationDTO.getIdEvaluation());
-								/*RubriqueEvaluation rubriqueEvaluation = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluationAndRubrique(rubriqueEvaluationDTO.getIdEvaluation(),rubriqueEvaluationDTO.getIdRubrique());
-
-
-
-								if (rubriqueEvaluation != null){
-									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation.getQuestionEvaluations();
-									if (questionEvaluationList != null){
-										questionEvaluationRepository.deleteAll(questionEvaluationList);
-									}
-									rubriqueEvaluationRepository.delete(rubriqueEvaluation);
-								}*/
-								RubriqueEvaluation newRubriqueEvaluation = new RubriqueEvaluation();
-								Evaluation newEvaluation = evaluationRepository.findById(rubriqueEvaluationDTO.getIdEvaluation());
-								Rubrique newRubrique = rubriqueRepository.findById(rubriqueEvaluationDTO.getIdRubrique()).get();
-								short ordreRubriqueEvaluation = (short) rubriqueEvaluationDTO.getOrdre();
-
-								List<QuestionEvaluation> questionEvaluationList = new ArrayList<>();
-
-								newRubriqueEvaluation.setIdEvaluation(newEvaluation);
-								newRubriqueEvaluation.setIdRubrique(newRubrique);
-								newRubriqueEvaluation.setOrdre(ordreRubriqueEvaluation);
-								newRubriqueEvaluation.setDesignation(newRubrique.getDesignation());
-
-								rubriqueEvaluationRepository.save(newRubriqueEvaluation);
-
-
-								List<QuestionEvaluationDTO> questionEvaluationDTOs = rubriqueEvaluationDTO.getQuestionEvaluations();
-								for (QuestionEvaluationDTO questionEvaluationDTO : questionEvaluationDTOs){
-									QuestionEvaluation newQuestionEvaluation = new QuestionEvaluation();
-
-									short ordreQuestionEvaluation = (short) questionEvaluationDTO.getOrdre();
-									Question question = questionRepository.findById(questionEvaluationDTO.getIdQuestion()).get();
-
-									newQuestionEvaluation.setOrdre(ordreQuestionEvaluation);
-									newQuestionEvaluation.setIdQuestion(question);
-									newQuestionEvaluation.setIdQualificatif(question.getIdQualificatif());
-									newQuestionEvaluation.setIntitule(question.getIntitule());
-									newQuestionEvaluation.setIdRubriqueEvaluation(newRubriqueEvaluation);
-
-									questionEvaluationRepository.save(newQuestionEvaluation);
-
-								}
-							}
-
-						}else{
-							List<RubriqueEvaluation> rubriqueEvaluationList = rubriqueEvaluationRepository.getRubriqueEvaluationByEvaluation((Short.parseShort(requestMap.getNoEvaluation())));
-							for (RubriqueEvaluation rubriqueEvaluation1 : rubriqueEvaluationList){
-								if(rubriqueEvaluation1 != null){
-									Set<QuestionEvaluation> questionEvaluationList = rubriqueEvaluation1.getQuestionEvaluations();
-									if (questionEvaluationList != null){
-										questionEvaluationRepository.deleteAll(questionEvaluationList);
-									}
-									rubriqueEvaluationRepository.delete(rubriqueEvaluation1);
-								}
-							}
-						}
-
-
-						evaluationRepository.updateEvaluation(requestMap.getCodeFormation(), requestMap.getPromotion(), LocalDate.parse(requestMap.getDebutReponse()), LocalDate.parse(requestMap.getFinReponse()), requestMap.getDesignation(), ecString, requestMap.getCodeUE(), Short.parseShort(requestMap.getNoEvaluation()), requestMap.getPeriode());
+						evaluationRepository.updateEvaluation(requestMap.get("codeFormation"), requestMap.get("promotion"), LocalDate.parse(requestMap.get("debutReponse")), LocalDate.parse(requestMap.get("finReponse")), requestMap.get("designation"), ecString, requestMap.get("codeUE"), Short.parseShort(requestMap.get("noEvaluation")), requestMap.get("periode"));
 						return BackendUtils.getResponseEntity(EvaeBackendConstants.USER_STATUS, HttpStatus.OK);
 					}else{
 						return BackendUtils.getResponseEntity("Evaluation n est pas en cours d elaboration", HttpStatus.BAD_REQUEST);
@@ -296,18 +219,14 @@ public class EvaluationService {
 				List<Promotion> promotions = promotionRepository.findAll();
 
 				List<PromotionDTO> promotionDTOs = new ArrayList<>();
-				Set<String> uniqueAnnees = new HashSet<>(); // Utilisation d'un ensemble pour stocker les années universitaires uniques
 
 				for (Promotion promotion : promotions) {
-					String anneeUniversitaire = promotion.getId().getAnneeUniversitaire();
-					if (!uniqueAnnees.contains(anneeUniversitaire)) { // Vérifie si l'année universitaire est déjà ajoutée
-						PromotionDTO promotionDTO = new PromotionDTO();
-						promotionDTO.setAnneePro(anneeUniversitaire);
-						promotionDTO.setCodeFormation(promotion.getCodeFormation().getCodeFormation());
+					PromotionDTO promotionDTO = new PromotionDTO();
 
-						promotionDTOs.add(promotionDTO);
-						uniqueAnnees.add(anneeUniversitaire); // Ajoute l'année universitaire à l'ensemble des années uniques
-					}
+					promotionDTO.setAnneePro(promotion.getId().getAnneeUniversitaire());
+					promotionDTO.setCodeFormation(promotion.getCodeFormation().getCodeFormation());
+
+					promotionDTOs.add(promotionDTO);
 				}
 				return new ResponseEntity<>(promotionDTOs, HttpStatus.OK);
 			} else {
@@ -583,11 +502,6 @@ public class EvaluationService {
 					evaluationDTO.setNoEvaluation(evaluation.getNoEvaluation());
 					evaluationDTO.setPeriode(evaluation.getPeriode());
 					evaluationDTO.setPromotion(evaluation.getPromotion().getId().getAnneeUniversitaire());
-					if (evaluation.getElementConstitutif() != null) {
-						evaluationDTO.setCodeEC(evaluation.getElementConstitutif().getId().getCodeEc());
-					}else {
-						evaluationDTO.setCodeEC("");
-					}
 
 					EnseignantDTO ens = new EnseignantDTO();
 					ens.setEmailUbo(evaluation.getNoEnseignant().getEmailUbo());
@@ -795,14 +709,88 @@ public class EvaluationService {
 	}
 
 
+	public ResponseEntity<EvaluationDTO> getEvaluationById(Integer evaluationId) {
+		try {
+			if (jwtFilter.isEtudiant()) {
+				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
+				Optional<Evaluation> optionalEvaluation = evaluationRepository.findById(evaluationId);
 
+				if (optionalEvaluation.isPresent()) {
+					Evaluation evaluation = optionalEvaluation.get();
+					EvaluationDTO evaluationDTO = new EvaluationDTO();
+					evaluationDTO.setDebutReponse(evaluation.getDebutReponse());
+					evaluationDTO.setDesignation(evaluation.getDesignation());
+					evaluationDTO.setCodeUE(evaluation.getUniteEnseignement().getId().getCodeUe());
+					evaluationDTO.setCodeFormation(evaluation.getPromotion().getCodeFormation().getCodeFormation());
+					evaluationDTO.setEtat(evaluation.getEtat());
+					evaluationDTO.setFinReponse(evaluation.getFinReponse());
+					evaluationDTO.setId(evaluation.getId());
+					evaluationDTO.setNoEvaluation(evaluation.getNoEvaluation());
+					evaluationDTO.setPeriode(evaluation.getPeriode());
+					evaluationDTO.setPromotion(evaluation.getPromotion().getId().getAnneeUniversitaire());
 
+					if (evaluation.getElementConstitutif() != null) {
+						evaluationDTO.setCodeEC(evaluation.getElementConstitutif().getId().getCodeEc());
+					} else {
+						evaluationDTO.setCodeEC("");
+					}
 
+					EnseignantDTO ens = new EnseignantDTO();
+					ens.setEmailUbo(evaluation.getNoEnseignant().getEmailUbo());
+					ens.setId(evaluation.getNoEnseignant().getId());
+					ens.setNom(evaluation.getNoEnseignant().getNom());
+					ens.setPrenom(evaluation.getNoEnseignant().getPrenom());
+					evaluationDTO.setNoEnseignant(ens);
 
+					List<RubriqueEvaluation> rubriques = rubriqueEvaluationRepository.findByIdEvaluation(evaluation);
+					List<EvaluationQuestionDTO> evaluationQuestions = new ArrayList<>();
 
+					for (RubriqueEvaluation rubrique : rubriques) {
+						EvaluationQuestionDTO evaluationQuestionDTO = new EvaluationQuestionDTO();
+						evaluationQuestionDTO.setIdRubrique(rubrique.getId());
+						evaluationQuestionDTO.setOrdre(Long.valueOf(rubrique.getOrdre()));
+						evaluationQuestionDTO.setDesignation(rubrique.getIdRubrique().getDesignation());
+						evaluationQuestionDTO.setType(rubrique.getIdRubrique().getType());
 
+						Set<QuestionDTO> uniqueQuestions = new LinkedHashSet<>();
+						List<QuestionEvaluation> questionEvaluations = questionEvaluationRepository.getQuestionEvaluationRE(rubrique.getId());
 
+						for (QuestionEvaluation questionEvaluation : questionEvaluations) {
+							QuestionDTO questionDTO = new QuestionDTO();
+							questionDTO.setId(questionEvaluation.getId());
+							questionDTO.setIntitule(questionEvaluation.getIdQuestion().getIntitule());
+							questionDTO.setType(questionEvaluation.getIdQuestion().getType());
+							questionDTO.setOrdre(Long.valueOf(questionEvaluation.getOrdre()));
 
+							questionDTO.setPositionnements(0L);
 
+							QualificatifDTO qualificatifDTO = new QualificatifDTO();
+							qualificatifDTO.setId(questionEvaluation.getIdQuestion().getIdQualificatif().getId());
+							qualificatifDTO.setMaximal(questionEvaluation.getIdQuestion().getIdQualificatif().getMaximal());
+							qualificatifDTO.setMinimal(questionEvaluation.getIdQuestion().getIdQualificatif().getMinimal());
+							questionDTO.setIdQualificatif(qualificatifDTO);
+
+							uniqueQuestions.add(questionDTO);
+						}
+
+						List<QuestionDTO> questionsList = new ArrayList<>(uniqueQuestions);
+						evaluationQuestionDTO.setQuestions(questionsList);
+						evaluationQuestions.add(evaluationQuestionDTO);
+					}
+
+					evaluationDTO.setRubriques(evaluationQuestions);
+
+					return new ResponseEntity<>(evaluationDTO, HttpStatus.OK);
+				} else {
+					return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				}
+			} else {
+				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }
