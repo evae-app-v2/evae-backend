@@ -6,7 +6,9 @@ import java.util.Map;
 
 import com.example.demo.DTO.*;
 import com.example.demo.constants.EvaeBackendConstants;
+import com.example.demo.models.Evaluation;
 import com.example.demo.models.Formation;
+import com.example.demo.repositories.EvaluationRepository;
 import com.example.demo.utils.BackendUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,15 +20,17 @@ import com.example.demo.services.EvaluationService;
 @RestController
 @RequestMapping("/api/v1/evaluation")
 public class EvaluationController {
-	
+
 	@Autowired
 	EvaluationService evaluationsservice;
-	
+	@Autowired
+	EvaluationRepository evaluationRepository;
+
 	@GetMapping
 	public ResponseEntity<List<EvaluationDTO>> getEvaluations(){
 		try {
 			return evaluationsservice.getEvaluations();
-			
+
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -43,14 +47,9 @@ public class EvaluationController {
 		}
 	}
 
-	/*@GetMapping("/etudiantR")
-	public ResponseEntity<List<EvaluationDTO>> getEvaluationsEtudiantR() {
-		try {
-			return evaluationsservice.getEvaluationsEtudiantR();
-		} catch(Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	/*@GetMapping("/getEvae/{idEvaluation}")
+	public ResponseEntity<EvaluationDTO> getEvae(@PathVariable long idEvaluation) {
+        return evaluationRepository.findById((int) idEvaluation);
 	}*/
 
 	@PostMapping("/avancerWorkflow/{idEvaluation}")
@@ -69,7 +68,7 @@ public class EvaluationController {
 	}
 
 	@PostMapping(value="/update")
-	public ResponseEntity<String> modifierEvaluation(@RequestBody EvaluationUpdateDTO requestMap) {
+	public ResponseEntity<String> modifierEvaluation(@RequestBody Map<String, String> requestMap) {
 		try {
 			return evaluationsservice.update(requestMap);
 		} catch (Exception e) {
@@ -110,7 +109,10 @@ public class EvaluationController {
 		}
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}*/
-
+	@GetMapping("/getEvaluationById/{evaluationId}")
+	public ResponseEntity<EvaluationDTO> getEvaluationById(@PathVariable Integer evaluationId) {
+		return evaluationsservice.getEvaluationById(evaluationId);
+	}
 	@GetMapping(value = "/get-Ue-By-Enseignant-And-Formation/{codeFormation}")
 	public ResponseEntity<List<UniteEnseignementDTO>> getUniteEnseignementByCodeFormationAndNoEnseignant(@PathVariable("codeFormation") String codeFormation){
 		try {
