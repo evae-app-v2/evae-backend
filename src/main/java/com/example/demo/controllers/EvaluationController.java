@@ -155,14 +155,14 @@ public class EvaluationController {
 	}
 
 	@GetMapping(value="/isEtudiantRepondreEvaluation/{idEvaluation}")
-	public ResponseEntity<Boolean> isEtudiantRepondreEvaluation(@PathVariable("idEvaluation") int idEvaluation) {
+	public ResponseEntity<ReponseEvaluationOutputDTO> isEtudiantRepondreEvaluation(@PathVariable("idEvaluation") int idEvaluation) {
 		try {
 			return evaluationsservice.isEtudiantRepondreEvaluation(idEvaluation);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(new ReponseEvaluationOutputDTO(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@GetMapping("/getEvaluationById/{evaluationId}")

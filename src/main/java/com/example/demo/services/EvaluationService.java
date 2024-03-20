@@ -774,26 +774,28 @@ public class EvaluationService {
 		return BackendUtils.getResponseEntity(EvaeBackendConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	public ResponseEntity<Boolean> isEtudiantRepondreEvaluation(int idEValuation) {
+	public ResponseEntity<ReponseEvaluationOutputDTO> isEtudiantRepondreEvaluation(int idEValuation) {
 		try {
 			if (jwtFilter.isEtudiant()) {
 				Authentification user = userRepository.findByEmail(jwtFilter.getCurrentuser());
 				ReponseEvaluation reponseEvaluation = reponseEvaluationRepository.findByEtudiantAndEvaluation(user.getNoEtudiant().getNoEtudiant(),idEValuation);
 
 				if(reponseEvaluation != null){
-					return new ResponseEntity<>(true, HttpStatus.OK);
+					ReponseEvaluationOutputDTO reponseEvaluationOutputDTO = new ReponseEvaluationOutputDTO();
+					reponseEvaluationOutputDTO.setEstRepondre(true);
+					reponseEvaluationOutputDTO.setCommentaire(reponseEvaluation.getCommentaire());
+					return new ResponseEntity<>(reponseEvaluationOutputDTO, HttpStatus.OK);
 				}else {
-					return new ResponseEntity<>(false, HttpStatus.OK);
+					return new ResponseEntity<>(new ReponseEvaluationOutputDTO(), HttpStatus.OK);
 				}
 			} else {
-				return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>(new ReponseEvaluationOutputDTO(), HttpStatus.UNAUTHORIZED);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(new ReponseEvaluationOutputDTO(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
-
 
 
 
